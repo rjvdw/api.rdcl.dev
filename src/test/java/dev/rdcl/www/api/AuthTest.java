@@ -2,6 +2,8 @@ package dev.rdcl.www.api;
 
 import dev.rdcl.www.api.auth.dto.LoginResponse;
 import dev.rdcl.www.api.auth.dto.VerificationResponse;
+import dev.rdcl.www.api.fixtures.Identities;
+import dev.rdcl.www.api.jwt.JwtService;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.MockMailbox;
 import io.quarkus.test.junit.QuarkusTest;
@@ -24,11 +26,11 @@ import static org.hamcrest.Matchers.is;
 @QuarkusTest
 public class AuthTest {
 
-    private final static String VALID_USER = "john.doe@example.com";
-    private final static String INVALID_USER = "jane.doe@example.com";
-
     @Inject
     MockMailbox mailbox;
+
+    @Inject
+    JwtService jwtService;
 
     @Inject
     JWTParser jwtParser;
@@ -41,17 +43,17 @@ public class AuthTest {
     @Test
     @DisplayName("When an existing user tries to log in, they get a session token, and a verification code is mailed")
     public void testLogin() {
-        login(VALID_USER)
+        login(Identities.VALID_IDENTITY.getEmail())
             .then().statusCode(200);
 
-        List<Mail> mails = mailbox.getMessagesSentTo(VALID_USER);
+        List<Mail> mails = mailbox.getMessagesSentTo(Identities.VALID_IDENTITY.getEmail());
         assertThat(mails, hasSize(1));
     }
 
     @Test
     @DisplayName("When a non-existing user tries to log in, they get a session token, but no verification code is mailed")
     public void testLoginWithInvalidUser() {
-        login(INVALID_USER)
+        login(Identities.INVALID_IDENTITY.getEmail())
             .then().statusCode(200);
 
         assertThat(mailbox.getTotalMessagesSent(), is(0));
@@ -60,11 +62,11 @@ public class AuthTest {
     @Test
     @DisplayName("When a user verifies their log-in attempt they get a JWT")
     public void testVerifyLogin() throws Exception {
-        LoginResponse loginResponse = login(VALID_USER)
+        LoginResponse loginResponse = login(Identities.VALID_IDENTITY.getEmail())
             .then().statusCode(200)
             .extract().body().as(LoginResponse.class);
 
-        Mail mail = mailbox.getMessagesSentTo(VALID_USER).get(0);
+        Mail mail = mailbox.getMessagesSentTo(Identities.VALID_IDENTITY.getEmail()).get(0);
 
         VerificationResponse verificationResponse = verify(loginResponse, mail)
             .then().statusCode(200)
@@ -72,6 +74,36 @@ public class AuthTest {
 
         JsonWebToken jwt = jwtParser.parse(verificationResponse.jwt());
         assertThat(jwt.getSubject(), is("f277b076-f061-403c-bf7b-266eab926677"));
+    }
+
+    @Test
+    @DisplayName("When a user tries to verify their log-in with an invalid or expired session they get an error response")
+    public void testVerifyLoginInvalid() {
+        verify("invalid session token", "invalid verification code")
+            .then().statusCode(401);
+    }
+
+    @Test
+    @DisplayName("Authenticated users can view their profile")
+    public void testMeAuthenticated() {
+        String jwt = jwtService.issueJwt(Identities.VALID_IDENTITY);
+        me(jwt).then().statusCode(200);
+    }
+
+    @Test
+    @DisplayName("Unauthenticated users cannot view their profile")
+    public void testMeUnauthenticated() {
+        me().then().statusCode(401);
+    }
+
+    private Response me() {
+        return given().when().get("/auth/me");
+    }
+
+    private Response me(String jwt) {
+        return given()
+            .header("Authorization", "Bearer %s".formatted(jwt))
+            .when().get("/auth/me");
     }
 
     private Response login(String email) {
