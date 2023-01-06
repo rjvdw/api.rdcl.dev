@@ -2,6 +2,8 @@ package dev.rdcl.www.api.auth;
 
 import dev.rdcl.www.api.auth.entities.Identity;
 import dev.rdcl.www.api.auth.entities.LoginAttempt;
+import dev.rdcl.www.api.auth.errors.LoginAttemptNotFound;
+import dev.rdcl.www.api.auth.errors.UserNotFound;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +29,14 @@ public class AuthService {
     private final Mailer mailer;
 
     public Identity getUser(UUID id) {
-        return em
-            .createNamedQuery("Identity.findById", Identity.class)
-            .setParameter("id", id)
-            .getSingleResult();
+        try {
+            return em
+                .createNamedQuery("Identity.findById", Identity.class)
+                .setParameter("id", id)
+                .getSingleResult();
+        } catch (NoResultException e) {
+            throw new UserNotFound(e);
+        }
     }
 
     @Transactional
@@ -62,16 +68,20 @@ public class AuthService {
 
     @Transactional
     public Identity verifyLogin(String sessionToken, String verificationCode) {
-        LoginAttempt loginAttempt = em
-            .createNamedQuery("LoginAttempt.findBySessionTokenAndVerificationCode", LoginAttempt.class)
-            .setParameter("sessionToken", sessionToken)
-            .setParameter("verificationCode", verificationCode)
-            .setParameter("createdAfter", Instant.now().minusSeconds(authProperties.maxLoginAttemptDurationSeconds()))
-            .getSingleResult();
+        try {
+            LoginAttempt loginAttempt = em
+                .createNamedQuery("LoginAttempt.findBySessionTokenAndVerificationCode", LoginAttempt.class)
+                .setParameter("sessionToken", sessionToken)
+                .setParameter("verificationCode", verificationCode)
+                .setParameter("createdAfter", Instant.now().minusSeconds(authProperties.maxLoginAttemptDurationSeconds()))
+                .getSingleResult();
 
-        em.remove(loginAttempt);
+            em.remove(loginAttempt);
 
-        return loginAttempt.getIdentity();
+            return loginAttempt.getIdentity();
+        } catch (NoResultException e) {
+            throw new LoginAttemptNotFound(e);
+        }
     }
 
     private String generateSessionToken() {
