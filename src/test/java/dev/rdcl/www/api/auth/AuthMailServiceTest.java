@@ -34,7 +34,8 @@ public class AuthMailServiceTest {
     public void testConsume() {
         AuthMailService.VerificationMailEvent event = new AuthMailService.VerificationMailEvent(
             Identities.VALID_IDENTITY.getEmail(),
-            "my-verification-code"
+            "my-verification-code",
+            null
         );
 
         authMailService.consume(event);
@@ -50,13 +51,13 @@ public class AuthMailServiceTest {
     private String extractVerificationCode(Mail mail) {
         String html = mail.getHtml();
 
-        int from = html.indexOf("<pre>");
+        int from = html.indexOf("verification-code=");
         if (from == -1) {
             return null;
         }
-        from += "<pre>".length();
+        from += "verification-code=".length();
 
-        int to = html.indexOf("</pre>", from);
+        int to = html.indexOf("\"", from);
         if (to == -1) {
             return null;
         }

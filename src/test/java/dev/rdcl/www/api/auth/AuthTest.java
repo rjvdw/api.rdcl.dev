@@ -16,6 +16,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
+import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,8 +43,37 @@ public class AuthTest {
         Mockito.verify(authMailService)
             .sendVerificationMail(
                 ArgumentMatchers.eq(Identities.VALID_IDENTITY.getEmail()),
-                ArgumentMatchers.any()
+                ArgumentMatchers.any(),
+                ArgumentMatchers.eq(null)
             );
+    }
+
+    @Test
+    @DisplayName("A valid callback can be provided")
+    public void testLoginWithValidCallback() {
+        login(Identities.VALID_IDENTITY.getEmail(), "https://example.com/login/verify")
+            .then().statusCode(200);
+
+        Mockito.verify(authMailService)
+            .sendVerificationMail(
+                ArgumentMatchers.eq(Identities.VALID_IDENTITY.getEmail()),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.eq(URI.create("https://example.com/login/verify"))
+            );
+    }
+
+    @Test
+    @DisplayName("An error is returned when a malformed callback is provided")
+    public void testLoginWithMalformedCallback() {
+        login(Identities.VALID_IDENTITY.getEmail(), "malformed-uri")
+            .then().statusCode(400);
+    }
+
+    @Test
+    @DisplayName("An error is returned when a callback which is not allowed is provided")
+    public void testLoginWithIllegalCallback() {
+        login(Identities.VALID_IDENTITY.getEmail(), "https://example.com/not-allowed/login")
+            .then().statusCode(400);
     }
 
     @Test
@@ -55,6 +85,7 @@ public class AuthTest {
         Mockito.verify(authMailService, Mockito.never())
             .sendVerificationMail(
                 ArgumentMatchers.eq(Identities.INVALID_IDENTITY.getEmail()),
+                ArgumentMatchers.any(),
                 ArgumentMatchers.any()
             );
     }
@@ -71,7 +102,8 @@ public class AuthTest {
         Mockito.verify(authMailService)
             .sendVerificationMail(
                 ArgumentMatchers.eq(Identities.VALID_IDENTITY.getEmail()),
-                verificationCodeCaptor.capture()
+                verificationCodeCaptor.capture(),
+                ArgumentMatchers.any()
             );
 
         VerificationResponse verificationResponse = verify(loginResponse, verificationCodeCaptor.getValue())
@@ -115,7 +147,15 @@ public class AuthTest {
     private Response login(String email) {
         return given()
             .header("Content-Type", "application/x-www-form-urlencoded")
-            .body("email=%s".formatted(email))
+            .formParam("email", email)
+            .when().post("/auth/login");
+    }
+
+    private Response login(String email, String callback) {
+        return given()
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .formParam("email", email)
+            .formParam("callback", callback)
             .when().post("/auth/login");
     }
 
@@ -128,7 +168,8 @@ public class AuthTest {
     private Response verify(String sessionToken, String verificationCode) {
         return given()
             .header("Content-Type", "application/x-www-form-urlencoded")
-            .body("session-token=%s&verification-code=%s".formatted(sessionToken, verificationCode))
+            .formParam("session-token", sessionToken)
+            .formParam("verification-code", verificationCode)
             .when().post("/auth/login/verify");
     }
 

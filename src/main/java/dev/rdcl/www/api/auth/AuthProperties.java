@@ -12,4 +12,8 @@ public interface AuthProperties {
 
     @WithDefault("360")
     int maxLoginAttemptDurationSeconds();
+
+    String defaultLoginCallbackUrl();
+
+    String verificationEmailFrom();
 }
