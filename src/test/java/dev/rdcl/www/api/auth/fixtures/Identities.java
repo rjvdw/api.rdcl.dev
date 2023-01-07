@@ -1,4 +1,4 @@
-package dev.rdcl.www.api.fixtures;
+package dev.rdcl.www.api.auth.fixtures;
 
 import dev.rdcl.www.api.auth.entities.Identity;
 
