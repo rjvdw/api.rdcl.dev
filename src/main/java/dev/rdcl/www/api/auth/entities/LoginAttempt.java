@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -34,6 +35,10 @@ import java.util.UUID;
         and l.verificationCode = :verificationCode
         and l.created > :createdAfter
         """),
+    @NamedQuery(name = "LoginAttempt.deleteExpired", query = """
+        delete from LoginAttempt l
+        where l.created < :createdBefore
+        """),
 })
 public class LoginAttempt {
 
@@ -56,8 +61,7 @@ public class LoginAttempt {
     @JoinColumn(name = "identity", nullable = false, updatable = false)
     private Identity identity;
 
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "created", nullable = false, insertable = false, updatable = false)
-    @ColumnDefault("now()")
+    @Column(name = "created", nullable = false, updatable = false)
+    @CreationTimestamp
     private Instant created;
 }
