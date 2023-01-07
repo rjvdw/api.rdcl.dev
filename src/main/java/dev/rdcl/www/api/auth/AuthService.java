@@ -4,8 +4,6 @@ import dev.rdcl.www.api.auth.entities.Identity;
 import dev.rdcl.www.api.auth.entities.LoginAttempt;
 import dev.rdcl.www.api.auth.errors.LoginAttemptNotFound;
 import dev.rdcl.www.api.auth.errors.UserNotFound;
-import io.quarkus.mailer.Mail;
-import io.quarkus.mailer.Mailer;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 
@@ -15,7 +13,6 @@ import javax.persistence.NoResultException;
 import javax.transaction.Transactional;
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -26,7 +23,7 @@ public class AuthService {
 
     private final EntityManager em;
 
-    private final Mailer mailer;
+    private final AuthMailService authMailService;
 
     public Identity getUser(UUID id) {
         try {
@@ -58,7 +55,7 @@ public class AuthService {
             em.persist(loginAttempt);
             em.flush();
 
-            mailer.send(verificationMail(identity, loginAttempt));
+            authMailService.sendVerificationMail(identity.getEmail(), loginAttempt.getVerificationCode());
         } catch (NoResultException e) {
             // If the user does not exist, return a session token anyway.
         }
@@ -100,18 +97,6 @@ public class AuthService {
 
     private static String encode(byte[] bytes) {
         return Base64.encodeBase64URLSafeString(bytes);
-    }
-
-    private Mail verificationMail(Identity identity, LoginAttempt loginAttempt) {
-        Mail mail = new Mail();
-
-        mail.setFrom("noreply@rdcl.dev");
-        mail.setTo(List.of(identity.getEmail()));
-        mail.setSubject("Login request");
-        mail.setText("Verification code: %s".formatted(loginAttempt.getVerificationCode()));
-        mail.setHtml("<p>Verification code: <pre>%s</pre></code>".formatted(loginAttempt.getVerificationCode()));
-
-        return mail;
     }
 
 }
