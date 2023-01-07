@@ -4,6 +4,7 @@ import dev.rdcl.www.api.auth.entities.Identity;
 import dev.rdcl.www.api.auth.entities.LoginAttempt;
 import dev.rdcl.www.api.auth.errors.LoginAttemptNotFound;
 import dev.rdcl.www.api.auth.errors.UserNotFound;
+import io.quarkus.scheduler.Scheduled;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 
@@ -70,7 +71,7 @@ public class AuthService {
                 .createNamedQuery("LoginAttempt.findBySessionTokenAndVerificationCode", LoginAttempt.class)
                 .setParameter("sessionToken", sessionToken)
                 .setParameter("verificationCode", verificationCode)
-                .setParameter("createdAfter", Instant.now().minusSeconds(authProperties.maxLoginAttemptDurationSeconds()))
+                .setParameter("createdAfter", expiryThreshold())
                 .getSingleResult();
 
             em.remove(loginAttempt);
@@ -79,6 +80,18 @@ public class AuthService {
         } catch (NoResultException e) {
             throw new LoginAttemptNotFound(e);
         }
+    }
+
+    @Scheduled(every = "1h")
+    @Transactional
+    public void cleanUpOldLoginAttempts() {
+        em.createNamedQuery("LoginAttempt.deleteExpired")
+            .setParameter("createdBefore", expiryThreshold())
+            .executeUpdate();
+    }
+
+    private Instant expiryThreshold() {
+        return Instant.now().minusSeconds(authProperties.maxLoginAttemptDurationSeconds());
     }
 
     private String generateSessionToken() {
