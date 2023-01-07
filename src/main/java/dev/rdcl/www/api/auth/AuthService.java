@@ -1,7 +1,9 @@
 package dev.rdcl.www.api.auth;
 
+import dev.rdcl.www.api.auth.entities.AllowedCallback;
 import dev.rdcl.www.api.auth.entities.Identity;
 import dev.rdcl.www.api.auth.entities.LoginAttempt;
+import dev.rdcl.www.api.auth.errors.InvalidCallback;
 import dev.rdcl.www.api.auth.errors.LoginAttemptNotFound;
 import dev.rdcl.www.api.auth.errors.UserNotFound;
 import io.quarkus.scheduler.Scheduled;
@@ -12,6 +14,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.transaction.Transactional;
+import java.net.URI;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.UUID;
@@ -38,7 +41,9 @@ public class AuthService {
     }
 
     @Transactional
-    public String initiateLogin(String email) {
+    public String initiateLogin(String email, URI callback) {
+        validateCallback(callback);
+
         String sessionToken = generateSessionToken();
 
         try {
@@ -56,7 +61,11 @@ public class AuthService {
             em.persist(loginAttempt);
             em.flush();
 
-            authMailService.sendVerificationMail(identity.getEmail(), loginAttempt.getVerificationCode());
+            authMailService.sendVerificationMail(
+                identity.getEmail(),
+                loginAttempt.getVerificationCode(),
+                callback
+            );
         } catch (NoResultException e) {
             // If the user does not exist, return a session token anyway.
         }
@@ -92,6 +101,17 @@ public class AuthService {
 
     private Instant expiryThreshold() {
         return Instant.now().minusSeconds(authProperties.maxLoginAttemptDurationSeconds());
+    }
+
+    private void validateCallback(URI callback) {
+        if (callback != null) {
+            String url = callback.toString();
+            em.createNamedQuery("AllowedCallback.findByUrl", AllowedCallback.class)
+                .setParameter("url", url)
+                .getResultStream()
+                .findFirst()
+                .orElseThrow(() -> new InvalidCallback(url));
+        }
     }
 
     private String generateSessionToken() {

@@ -4,9 +4,11 @@ import dev.rdcl.www.api.auth.dto.IdentityResponse;
 import dev.rdcl.www.api.auth.dto.LoginResponse;
 import dev.rdcl.www.api.auth.dto.VerificationResponse;
 import dev.rdcl.www.api.auth.entities.Identity;
+import dev.rdcl.www.api.auth.errors.InvalidCallback;
 import dev.rdcl.www.api.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.hibernate.validator.constraints.URL;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -23,6 +25,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
 
 @Path("/auth")
@@ -56,11 +61,21 @@ public class AuthResource {
         @Valid
         @NotNull
         @Email
-        String email
-    ) {
-        String sessionToken = authService.initiateLogin(email);
+        String email,
 
-        return new LoginResponse(sessionToken);
+        @FormParam("callback")
+        @Valid
+        @URL
+        String callback
+    ) {
+        try {
+            URI uri = callback == null ? null : new java.net.URL(callback).toURI();
+            String sessionToken = authService.initiateLogin(email, uri);
+
+            return new LoginResponse(sessionToken);
+        } catch (MalformedURLException | URISyntaxException ex) {
+            throw new InvalidCallback(callback, ex);
+        }
     }
 
     @POST
