@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
+import java.util.List;
 
 @Data
 @Builder
@@ -52,6 +53,9 @@ public final class ActivityRequest {
     @DefaultValue("false")
     private boolean allDay;
 
+    @FormParam("labels")
+    private List<String> labels;
+
     public Activity toActivity() {
         return Activity.builder()
             .title(getTitle())
@@ -62,6 +66,7 @@ public final class ActivityRequest {
             .starts(IsoDateTimeValidator.parse(getStarts()))
             .ends(IsoDateTimeValidator.parse(getEnds()))
             .allDay(isAllDay())
+            .labels(getLabels())
             .build();
     }
 }

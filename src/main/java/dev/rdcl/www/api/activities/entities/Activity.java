@@ -7,7 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -19,6 +21,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -94,4 +97,11 @@ public class Activity {
     @Column(name = "all_day", nullable = false)
     @ColumnDefault("false")
     private boolean allDay;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "activity_label", joinColumns = {
+        @JoinColumn(name = "activity"),
+    })
+    @Column(name = "text", nullable = false, updatable = false)
+    private List<String> labels;
 }

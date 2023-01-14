@@ -18,6 +18,7 @@ import org.mockito.Mockito;
 
 import javax.inject.Inject;
 import java.time.Clock;
+import java.util.List;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
@@ -55,7 +56,8 @@ public class ActivityTest {
             "test location",
             "2022-05-05T12:00:00+02:00",
             null,
-            false
+            false,
+            List.of()
         );
 
         create(createRequest).then().statusCode(200);
@@ -81,7 +83,8 @@ public class ActivityTest {
             "updated test location",
             "2022-05-05T14:00:00+02:00",
             "2022-05-05T16:00:00+02:00",
-            true
+            true,
+            List.of()
         );
 
         ActivityResponse updateResponse = update(id, updateRequest).then().statusCode(200)

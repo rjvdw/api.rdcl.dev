@@ -3,6 +3,7 @@ package dev.rdcl.www.api.activities.dto;
 import dev.rdcl.www.api.activities.entities.Activity;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
@@ -17,7 +18,8 @@ public record ActivityResponse(
     String location,
     String starts,
     String ends,
-    boolean allDay
+    boolean allDay,
+    List<String> labels
 ) {
     public static ActivityResponse from(Activity activity) {
         DateTimeFormatter formatter = activity.isAllDay()
@@ -33,7 +35,8 @@ public record ActivityResponse(
             activity.getLocation(),
             activity.getStarts().format(formatter),
             activity.getEnds() == null ? null : activity.getEnds().format(formatter),
-            activity.isAllDay()
+            activity.isAllDay(),
+            activity.getLabels()
         );
     }
 }

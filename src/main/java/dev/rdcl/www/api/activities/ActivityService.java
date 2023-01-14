@@ -68,6 +68,7 @@ public class ActivityService {
             activity.setStarts(updatedActivity.getStarts());
             activity.setEnds(updatedActivity.getEnds());
             activity.setAllDay(updatedActivity.isAllDay());
+            activity.setLabels(updatedActivity.getLabels());
 
             em.persist(activity);
         }

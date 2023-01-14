@@ -8,8 +8,9 @@ public record ListActivitiesResponse(
     List<ActivityResponse> activities
 ) {
     public static ListActivitiesResponse from(List<Activity> activities) {
-        return new ListActivitiesResponse(
-            activities.stream().map(ActivityResponse::from).toList()
-        );
+        return new ListActivitiesResponse(activities
+            .stream()
+            .map(ActivityResponse::from)
+            .toList());
     }
 }
