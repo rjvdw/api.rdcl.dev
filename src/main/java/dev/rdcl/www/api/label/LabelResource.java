@@ -37,7 +37,7 @@ public class LabelResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     public ListLabelsResponse list(@Context SecurityContext ctx) {
-        UUID ownerId = jwtService.verifyJwt(jwt, ctx);
+        UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         List<Label> labels = labelService.get(ownerId);
 
         return ListLabelsResponse.from(labels);
@@ -50,7 +50,7 @@ public class LabelResource {
         @Valid Map<@NotNull @Size(max = 31) String, @NotNull LabelConfig> labelConfigs,
         @Context SecurityContext ctx
     ) {
-        UUID ownerId = jwtService.verifyJwt(jwt, ctx);
+        UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         List<Label> labels = labelConfigs.entrySet()
             .stream()
             .map(entry -> Label.builder()

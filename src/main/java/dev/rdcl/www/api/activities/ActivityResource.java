@@ -52,7 +52,7 @@ public class ActivityResource {
         @QueryParam("past") @DefaultValue("false") boolean getPastActivities,
         @QueryParam("when") @Valid @IsoDateTime String whenParam
     ) {
-        UUID ownerId = jwtService.verifyJwt(jwt, ctx);
+        UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         ZonedDateTime when = IsoDateTimeValidator.parse(whenParam, () -> ZonedDateTime.now(clock));
 
         List<Activity> activities = getPastActivities
@@ -70,7 +70,7 @@ public class ActivityResource {
         @PathParam("uuid") UUID activityId,
         @Context SecurityContext ctx
     ) {
-        UUID ownerId = jwtService.verifyJwt(jwt, ctx);
+        UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
 
         return activityService.getActivity(ownerId, activityId)
             .map(ActivityResponse::from);
@@ -84,7 +84,7 @@ public class ActivityResource {
         @BeanParam @Valid ActivityRequest request,
         @Context SecurityContext ctx
     ) {
-        UUID ownerId = jwtService.verifyJwt(jwt, ctx);
+        UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         Activity activity = request.toActivity();
         activityService.createActivity(ownerId, activity);
 
@@ -101,7 +101,7 @@ public class ActivityResource {
         @BeanParam @Valid ActivityRequest request,
         @Context SecurityContext ctx
     ) {
-        UUID ownerId = jwtService.verifyJwt(jwt, ctx);
+        UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         Activity activity = request.toActivity();
 
         return activityService.updateActivity(ownerId, activityId, activity)
@@ -115,7 +115,7 @@ public class ActivityResource {
         @PathParam("uuid") UUID activityId,
         @Context SecurityContext ctx
     ) {
-        UUID ownerId = jwtService.verifyJwt(jwt, ctx);
+        UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         activityService.deleteActivity(ownerId, activityId);
     }
 }

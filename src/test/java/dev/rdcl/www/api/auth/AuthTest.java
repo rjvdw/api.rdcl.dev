@@ -124,7 +124,7 @@ public class AuthTest {
     @Test
     @DisplayName("Authenticated users can view their profile")
     public void testMeAuthenticated() {
-        String jwt = jwtService.issueJwt(Identities.VALID_IDENTITY);
+        String jwt = jwtService.issueAuthToken(Identities.VALID_IDENTITY);
         me(jwt).then().statusCode(200);
     }
 

@@ -45,7 +45,7 @@ public class AuthResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     public IdentityResponse me(@Context SecurityContext ctx) {
-        UUID id = jwtService.verifyJwt(jwt, ctx);
+        UUID id = jwtService.verifyAuthToken(jwt, ctx);
         Identity identity = authService.getUser(id);
 
         return IdentityResponse.from(identity);
@@ -97,9 +97,9 @@ public class AuthResource {
         String verificationCode
     ) {
         Identity identity = authService.verifyLogin(sessionToken, verificationCode);
-        String jwt = jwtService.issueJwt(identity);
+        String authToken = jwtService.issueAuthToken(identity);
 
-        return new VerificationResponse(jwt);
+        return new VerificationResponse(authToken);
     }
 }
 

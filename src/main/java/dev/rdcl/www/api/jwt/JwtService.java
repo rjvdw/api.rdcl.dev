@@ -9,33 +9,36 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @ApplicationScoped
 @RequiredArgsConstructor
 public class JwtService {
 
-    private static final Duration JWT_EXPIRES_IN = Duration.of(4, ChronoUnit.HOURS);
-
     private final JwtProperties jwtProperties;
 
-    public String issueJwt(Identity identity) {
+    /**
+     * Issue an authorization token.
+     *
+     * @param identity The identity for which the authorization token is issued.
+     * @return An authorization token.
+     */
+    public String issueAuthToken(Identity identity) {
         return Jwt
             .issuer(jwtProperties.issuer())
             .subject(identity.getId().toString())
             .upn(identity.getEmail())
-            .groups("user")
+            .groups(Set.of("user"))
             .preferredUserName(identity.getName())
             .issuedAt(Instant.now())
-            .expiresIn(JWT_EXPIRES_IN)
+            .expiresIn(jwtProperties.authTokenExpiry())
             .sign();
     }
 
-    public Optional<UUID> verifyJwtOptional(JsonWebToken jwt, SecurityContext ctx) {
+    public Optional<UUID> verifyAuthTokenOptional(JsonWebToken jwt, SecurityContext ctx) {
         return Optional.ofNullable(ctx.getUserPrincipal())
             .filter(principal -> principal.getName().equals(jwt.getName()))
             .map(principal -> jwt)
@@ -43,8 +46,8 @@ public class JwtService {
             .map(UUID::fromString);
     }
 
-    public UUID verifyJwt(JsonWebToken jwt, SecurityContext ctx) {
-        return verifyJwtOptional(jwt, ctx)
+    public UUID verifyAuthToken(JsonWebToken jwt, SecurityContext ctx) {
+        return verifyAuthTokenOptional(jwt, ctx)
             .orElseThrow(() -> new WebApplicationException(Response.Status.UNAUTHORIZED));
     }
 

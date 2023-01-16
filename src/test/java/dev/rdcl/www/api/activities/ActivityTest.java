@@ -38,7 +38,7 @@ public class ActivityTest {
 
     @BeforeEach
     public void setup() {
-        Mockito.when(jwtService.verifyJwt(any(), any()))
+        Mockito.when(jwtService.verifyAuthToken(any(), any()))
             .thenReturn(Identities.VALID_IDENTITY.getId());
     }
 
