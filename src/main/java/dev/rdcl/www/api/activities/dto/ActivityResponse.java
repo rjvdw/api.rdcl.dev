@@ -2,12 +2,9 @@ package dev.rdcl.www.api.activities.dto;
 
 import dev.rdcl.www.api.activities.entities.Activity;
 
-import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
-
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 public record ActivityResponse(
     UUID id,
@@ -22,10 +19,6 @@ public record ActivityResponse(
     List<String> labels
 ) {
     public static ActivityResponse from(Activity activity) {
-        DateTimeFormatter formatter = activity.isAllDay()
-            ? ISO_LOCAL_DATE
-            : ISO_OFFSET_DATE_TIME;
-
         return new ActivityResponse(
             activity.getId(),
             activity.getTitle(),
@@ -33,10 +26,18 @@ public record ActivityResponse(
             activity.getNotes(),
             activity.getUrl(),
             activity.getLocation(),
-            activity.getStarts().format(formatter),
-            activity.getEnds() == null ? null : activity.getEnds().format(formatter),
+            nullableToString(activity.getStarts()),
+            nullableToString(activity.getEnds()),
             activity.isAllDay(),
             activity.getLabels()
         );
+    }
+
+    private static String nullableToString(ZonedDateTime zdt) {
+        if (zdt == null) {
+            return null;
+        }
+
+        return zdt.toOffsetDateTime().toString();
     }
 }

@@ -20,6 +20,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -36,10 +40,10 @@ import java.util.UUID;
         from Activity a
         where a.owner.id = :owner
         and (
-            (a.allDay = true and date(coalesce(a.ends, a.starts)) >= date(:when)) or
-            (a.allDay = false and (coalesce(a.ends, a.starts) >= :when))
+            (a.allDay = true and date(coalesce(a.endsLocalDateTime, a.startsLocalDateTime)) >= date(:when)) or
+            (a.allDay = false and (coalesce(a.endsLocalDateTime, a.startsLocalDateTime) >= :when))
         )
-        order by starts
+        order by startsLocalDateTime
         """),
 
     @NamedQuery(name = "Activity.findPast", query = """
@@ -47,10 +51,10 @@ import java.util.UUID;
         from Activity a
         where a.owner.id = :owner
         and (
-            (a.allDay = true and date(coalesce(a.ends, a.starts)) < date(:when)) or
-            (a.allDay = false and (coalesce(a.ends, a.starts) < :when))
+            (a.allDay = true and date(coalesce(a.endsLocalDateTime, a.startsLocalDateTime)) < date(:when)) or
+            (a.allDay = false and (coalesce(a.endsLocalDateTime, a.startsLocalDateTime) < :when))
         )
-        order by starts desc
+        order by coalesce(a.endsLocalDateTime, a.startsLocalDateTime) desc
         """),
 
     @NamedQuery(name = "Activity.findById", query = """
@@ -87,11 +91,48 @@ public class Activity {
     @Column(name = "location", nullable = false, length = 511)
     private String location;
 
+    @Column(name = "timezone", nullable = false, length = 63)
+    private String timezone;
+
+    @Transient
+    public ZoneId getZoneId() {
+        return ZoneId.of(getTimezone());
+    }
+
+    @Transient
+    public void setZoneId(ZoneId zoneId) {
+        setTimezone(zoneId.toString());
+    }
+
     @Column(name = "starts", nullable = false)
-    private ZonedDateTime starts;
+    private LocalDateTime startsLocalDateTime;
+
+    @Transient
+    public ZonedDateTime getStarts() {
+        return asZonedDateTime(getStartsLocalDateTime());
+    }
+
+    @Transient
+    public void setStarts(ZonedDateTime starts) {
+        setStartsLocalDateTime(starts == null ? null : starts.toLocalDateTime());
+        if (starts != null) {
+            setStartsLocalDateTime(starts.toLocalDateTime());
+            setZoneId(starts.getZone());
+        }
+    }
 
     @Column(name = "ends")
-    private ZonedDateTime ends;
+    private LocalDateTime endsLocalDateTime;
+
+    @Transient
+    public ZonedDateTime getEnds() {
+        return asZonedDateTime(getEndsLocalDateTime());
+    }
+
+    @Transient
+    public void setEnds(ZonedDateTime ends) {
+        setEndsLocalDateTime(ends == null ? null : ends.toLocalDateTime());
+    }
 
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "all_day", nullable = false)
@@ -104,4 +145,15 @@ public class Activity {
     })
     @Column(name = "text", nullable = false, updatable = false)
     private List<String> labels;
+
+    private ZonedDateTime asZonedDateTime(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+
+        ZoneId zoneId = getZoneId();
+        ZoneOffset offset = zoneId.getRules().getOffset(localDateTime);
+
+        return ZonedDateTime.ofInstant(localDateTime, offset, zoneId);
+    }
 }

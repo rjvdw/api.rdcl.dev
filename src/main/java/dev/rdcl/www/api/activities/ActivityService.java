@@ -25,7 +25,7 @@ public class ActivityService {
         return em
             .createNamedQuery("Activity.findUpcoming", Activity.class)
             .setParameter("owner", owner)
-            .setParameter("when", when)
+            .setParameter("when", when.toLocalDateTime())
             .getResultList();
     }
 
@@ -33,7 +33,7 @@ public class ActivityService {
         return em
             .createNamedQuery("Activity.findPast", Activity.class)
             .setParameter("owner", owner)
-            .setParameter("when", when)
+            .setParameter("when", when.toLocalDateTime())
             .getResultList();
     }
 

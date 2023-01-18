@@ -57,16 +57,19 @@ public final class ActivityRequest {
     private List<String> labels;
 
     public Activity toActivity() {
-        return Activity.builder()
+        Activity activity = Activity.builder()
             .title(getTitle())
             .description(getDescription())
             .notes(getNotes())
             .url(getUrl())
             .location(getLocation())
-            .starts(IsoDateTimeValidator.parse(getStarts()))
-            .ends(IsoDateTimeValidator.parse(getEnds()))
             .allDay(isAllDay())
             .labels(getLabels())
             .build();
+
+        activity.setStarts(IsoDateTimeValidator.parse(getStarts()));
+        activity.setEnds(IsoDateTimeValidator.parse(getEnds()));
+
+        return activity;
     }
 }

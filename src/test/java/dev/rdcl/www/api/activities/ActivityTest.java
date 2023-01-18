@@ -54,7 +54,7 @@ public class ActivityTest {
             null,
             "http://example.com/test-activity",
             "test location",
-            "2022-05-05T12:00:00+02:00",
+            "2022-05-05T12:00:00+06:00",
             null,
             false,
             List.of()
@@ -67,6 +67,7 @@ public class ActivityTest {
 
         assertThat(listResponse1.activities(), hasSize(1));
         assertThat(listResponse1.activities().get(0).url(), is("http://example.com/test-activity"));
+        assertThat(listResponse1.activities().get(0).starts(), is("2022-05-05T12:00+06:00"));
 
         UUID id = listResponse1.activities().get(0).id();
 
@@ -81,8 +82,8 @@ public class ActivityTest {
             "with some notes",
             "http://example.com/updated-test-activity",
             "updated test location",
-            "2022-05-05T14:00:00+02:00",
-            "2022-05-05T16:00:00+02:00",
+            "2022-05-05T14:00:00+06:00",
+            "2022-05-05T16:00:00+06:00",
             true,
             List.of()
         );
@@ -91,6 +92,8 @@ public class ActivityTest {
             .extract().body().as(ActivityResponse.class);
 
         assertThat(updateResponse.url(), is("http://example.com/updated-test-activity"));
+        assertThat(updateResponse.starts(), is("2022-05-05T14:00+06:00"));
+        assertThat(updateResponse.ends(), is("2022-05-05T16:00+06:00"));
 
         remove(id).then().statusCode(204);
 

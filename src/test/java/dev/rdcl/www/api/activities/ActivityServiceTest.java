@@ -135,10 +135,11 @@ public class ActivityServiceTest {
             .owner(owner)
             .title(title)
             .location("Test location")
-            .starts(starts)
-            .ends(ends)
             .allDay(allDay)
             .build();
+
+        activity.setStarts(starts);
+        activity.setEnds(ends);
 
         em.persist(activity);
 
