@@ -5,8 +5,8 @@ import dev.rdcl.www.api.activities.dto.ActivityResponse;
 import dev.rdcl.www.api.activities.dto.ListActivitiesResponse;
 import dev.rdcl.www.api.activities.entities.Activity;
 import dev.rdcl.www.api.jwt.JwtService;
-import dev.rdcl.www.api.validators.IsoDateTime;
-import dev.rdcl.www.api.validators.IsoDateTimeValidator;
+import dev.rdcl.www.api.validators.IsoInstant;
+import dev.rdcl.www.api.validators.IsoInstantValidator;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
@@ -27,7 +27,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import java.time.Clock;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,10 +50,10 @@ public class ActivityResource {
     public ListActivitiesResponse list(
         @Context SecurityContext ctx,
         @QueryParam("past") @DefaultValue("false") boolean getPastActivities,
-        @QueryParam("when") @Valid @IsoDateTime String whenParam
+        @QueryParam("when") @Valid @IsoInstant String whenParam
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
-        ZonedDateTime when = IsoDateTimeValidator.parse(whenParam, () -> ZonedDateTime.now(clock));
+        Instant when = IsoInstantValidator.parse(whenParam, () -> Instant.now(clock));
 
         List<Activity> activities = getPastActivities
             ? activityService.getPastActivities(ownerId, when)

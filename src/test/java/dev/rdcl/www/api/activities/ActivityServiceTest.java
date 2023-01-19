@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -24,7 +25,7 @@ import static org.hamcrest.Matchers.startsWith;
 @QuarkusTest
 public class ActivityServiceTest {
 
-    private final static ZonedDateTime NOW = ZonedDateTime.parse("2000-01-01T12:00:00+01:00");
+    private final static Instant NOW = Instant.parse("2000-01-01T12:00:00Z");
 
     @Inject
     ActivityService activityService;
@@ -102,12 +103,12 @@ public class ActivityServiceTest {
     }
 
     private List<Activity> createActivities(Identity owner) {
-        ZonedDateTime startsPast = ZonedDateTime.parse("1998-01-01T12:00:00+01:00");
-        ZonedDateTime startsPresent = ZonedDateTime.parse("2000-01-01T12:00:00+01:00");
-        ZonedDateTime startsFuture = ZonedDateTime.parse("2002-01-01T12:00:00+01:00");
-        ZonedDateTime endsPast = ZonedDateTime.parse("1998-01-01T14:00:00+01:00");
-        ZonedDateTime endsPresent = ZonedDateTime.parse("2000-01-01T23:59:59+01:00");
-        ZonedDateTime endsFuture = ZonedDateTime.parse("2002-01-01T14:00:00+01:00");
+        ZonedDateTime startsPast = ZonedDateTime.parse("1998-01-01T12:00:00Z");
+        ZonedDateTime startsPresent = ZonedDateTime.parse("2000-01-01T12:00:00Z");
+        ZonedDateTime startsFuture = ZonedDateTime.parse("2002-01-01T12:00:00Z");
+        ZonedDateTime endsPast = ZonedDateTime.parse("1998-01-01T14:00:00Z");
+        ZonedDateTime endsPresent = ZonedDateTime.parse("2000-01-01T23:59:59Z");
+        ZonedDateTime endsFuture = ZonedDateTime.parse("2002-01-01T14:00:00Z");
 
         return List.of(
             createActivity(owner, "past activity without an end date-time", startsPast, false),
@@ -138,6 +139,7 @@ public class ActivityServiceTest {
             .allDay(allDay)
             .build();
 
+        activity.setZoneId(starts.getZone());
         activity.setStarts(starts);
         activity.setEnds(ends);
 

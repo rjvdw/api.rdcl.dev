@@ -21,9 +21,8 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -39,22 +38,16 @@ import java.util.UUID;
         select a
         from Activity a
         where a.owner.id = :owner
-        and (
-            (a.allDay = true and date(coalesce(a.endsLocalDateTime, a.startsLocalDateTime)) >= date(:when)) or
-            (a.allDay = false and (coalesce(a.endsLocalDateTime, a.startsLocalDateTime) >= :when))
-        )
-        order by startsLocalDateTime
+        and whenPivot >= :when
+        order by startsInstant
         """),
 
     @NamedQuery(name = "Activity.findPast", query = """
         select a
         from Activity a
         where a.owner.id = :owner
-        and (
-            (a.allDay = true and date(coalesce(a.endsLocalDateTime, a.startsLocalDateTime)) < date(:when)) or
-            (a.allDay = false and (coalesce(a.endsLocalDateTime, a.startsLocalDateTime) < :when))
-        )
-        order by coalesce(a.endsLocalDateTime, a.startsLocalDateTime) desc
+        and whenPivot < :when
+        order by coalesce(a.endsInstant, a.startsInstant) desc
         """),
 
     @NamedQuery(name = "Activity.findById", query = """
@@ -105,33 +98,32 @@ public class Activity {
     }
 
     @Column(name = "starts", nullable = false)
-    private LocalDateTime startsLocalDateTime;
+    private Instant startsInstant;
 
     @Transient
     public ZonedDateTime getStarts() {
-        return asZonedDateTime(getStartsLocalDateTime());
+        return asZonedDateTime(getStartsInstant());
     }
 
     @Transient
     public void setStarts(ZonedDateTime starts) {
-        setStartsLocalDateTime(starts == null ? null : starts.toLocalDateTime());
-        if (starts != null) {
-            setStartsLocalDateTime(starts.toLocalDateTime());
-            setZoneId(starts.getZone());
-        }
+        setStartsInstant(starts == null ? null : starts.toInstant());
     }
 
     @Column(name = "ends")
-    private LocalDateTime endsLocalDateTime;
+    private Instant endsInstant;
+
+    @Column(name = "when_pivot", nullable = false, insertable = false, updatable = false)
+    private Instant whenPivot;
 
     @Transient
     public ZonedDateTime getEnds() {
-        return asZonedDateTime(getEndsLocalDateTime());
+        return asZonedDateTime(getEndsInstant());
     }
 
     @Transient
     public void setEnds(ZonedDateTime ends) {
-        setEndsLocalDateTime(ends == null ? null : ends.toLocalDateTime());
+        setEndsInstant(ends == null ? null : ends.toInstant());
     }
 
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -146,14 +138,12 @@ public class Activity {
     @Column(name = "text", nullable = false, updatable = false)
     private List<String> labels;
 
-    private ZonedDateTime asZonedDateTime(LocalDateTime localDateTime) {
-        if (localDateTime == null) {
+    private ZonedDateTime asZonedDateTime(Instant instant) {
+        if (instant == null) {
             return null;
         }
 
         ZoneId zoneId = getZoneId();
-        ZoneOffset offset = zoneId.getRules().getOffset(localDateTime);
-
-        return ZonedDateTime.ofInstant(localDateTime, offset, zoneId);
+        return instant.atZone(zoneId);
     }
 }

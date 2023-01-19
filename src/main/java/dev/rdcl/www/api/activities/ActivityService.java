@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,19 +21,19 @@ public class ActivityService {
 
     private final EntityManager em;
 
-    public List<Activity> getUpcomingActivities(UUID owner, ZonedDateTime when) {
+    public List<Activity> getUpcomingActivities(UUID owner, Instant when) {
         return em
             .createNamedQuery("Activity.findUpcoming", Activity.class)
             .setParameter("owner", owner)
-            .setParameter("when", when.toLocalDateTime())
+            .setParameter("when", when)
             .getResultList();
     }
 
-    public List<Activity> getPastActivities(UUID owner, ZonedDateTime when) {
+    public List<Activity> getPastActivities(UUID owner, Instant when) {
         return em
             .createNamedQuery("Activity.findPast", Activity.class)
             .setParameter("owner", owner)
-            .setParameter("when", when.toLocalDateTime())
+            .setParameter("when", when)
             .getResultList();
     }
 
@@ -65,6 +65,7 @@ public class ActivityService {
             activity.setNotes(updatedActivity.getNotes());
             activity.setUrl(updatedActivity.getUrl());
             activity.setLocation(updatedActivity.getLocation());
+            activity.setTimezone(updatedActivity.getTimezone());
             activity.setStarts(updatedActivity.getStarts());
             activity.setEnds(updatedActivity.getEnds());
             activity.setAllDay(updatedActivity.isAllDay());

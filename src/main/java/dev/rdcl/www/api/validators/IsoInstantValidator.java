@@ -2,11 +2,11 @@ package dev.rdcl.www.api.validators;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.function.Supplier;
 
-public class IsoDateTimeValidator implements ConstraintValidator<IsoDateTime, String> {
+public class IsoInstantValidator implements ConstraintValidator<IsoInstant, String> {
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
@@ -15,26 +15,26 @@ public class IsoDateTimeValidator implements ConstraintValidator<IsoDateTime, St
         }
 
         try {
-            ZonedDateTime.parse(value);
+            parse(value);
             return true;
         } catch (DateTimeParseException ex) {
             return false;
         }
     }
 
-    public static ZonedDateTime parse(String value) {
+    public static Instant parse(String value) {
         return parse(value, () -> null);
     }
 
-    public static ZonedDateTime parse(String value, ZonedDateTime defaultVAlue) {
+    public static Instant parse(String value, Instant defaultVAlue) {
         return parse(value, () -> defaultVAlue);
     }
 
-    public static ZonedDateTime parse(String value, Supplier<ZonedDateTime> defaultValue) {
+    public static Instant parse(String value, Supplier<Instant> defaultValue) {
         if (value == null || value.isEmpty()) {
             return defaultValue.get();
         }
 
-        return ZonedDateTime.parse(value);
+        return Instant.parse(value);
     }
 }

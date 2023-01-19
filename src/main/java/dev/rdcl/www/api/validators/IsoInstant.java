@@ -10,9 +10,9 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {IsoDateTimeValidator.class})
+@Constraint(validatedBy = {IsoInstantValidator.class})
 @Documented
-public @interface IsoDateTime {
+public @interface IsoInstant {
     String message() default "Invalid date-time";
 
     Class<?>[] groups() default {};

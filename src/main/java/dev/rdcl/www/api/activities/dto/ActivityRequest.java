@@ -1,8 +1,9 @@
 package dev.rdcl.www.api.activities.dto;
 
 import dev.rdcl.www.api.activities.entities.Activity;
-import dev.rdcl.www.api.validators.IsoDateTime;
-import dev.rdcl.www.api.validators.IsoDateTimeValidator;
+import dev.rdcl.www.api.validators.IsoInstant;
+import dev.rdcl.www.api.validators.IsoInstantValidator;
+import dev.rdcl.www.api.validators.Timezone;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,13 +41,18 @@ public final class ActivityRequest {
     @Size(max = 511)
     private String location;
 
+    @FormParam("timezone")
+    @NotNull
+    @Timezone
+    private String timezone;
+
     @FormParam("starts")
     @NotNull
-    @IsoDateTime
+    @IsoInstant
     private String starts;
 
     @FormParam("ends")
-    @IsoDateTime
+    @IsoInstant
     private String ends;
 
     @FormParam("allDay")
@@ -57,19 +63,17 @@ public final class ActivityRequest {
     private List<String> labels;
 
     public Activity toActivity() {
-        Activity activity = Activity.builder()
+        return Activity.builder()
             .title(getTitle())
             .description(getDescription())
             .notes(getNotes())
             .url(getUrl())
             .location(getLocation())
+            .timezone(getTimezone())
+            .startsInstant(IsoInstantValidator.parse(getStarts()))
+            .endsInstant(IsoInstantValidator.parse(getEnds()))
             .allDay(isAllDay())
             .labels(getLabels())
             .build();
-
-        activity.setStarts(IsoDateTimeValidator.parse(getStarts()));
-        activity.setEnds(IsoDateTimeValidator.parse(getEnds()));
-
-        return activity;
     }
 }

@@ -54,6 +54,7 @@ public class ActivityTest {
             null,
             "http://example.com/test-activity",
             "test location",
+            "Europe/Amsterdam",
             "2022-05-05T12:00:00+06:00",
             null,
             false,
@@ -67,7 +68,7 @@ public class ActivityTest {
 
         assertThat(listResponse1.activities(), hasSize(1));
         assertThat(listResponse1.activities().get(0).url(), is("http://example.com/test-activity"));
-        assertThat(listResponse1.activities().get(0).starts(), is("2022-05-05T12:00+06:00"));
+        assertThat(listResponse1.activities().get(0).starts(), is("2022-05-05T08:00+02:00"));
 
         UUID id = listResponse1.activities().get(0).id();
 
@@ -82,8 +83,9 @@ public class ActivityTest {
             "with some notes",
             "http://example.com/updated-test-activity",
             "updated test location",
+            "Europe/Amsterdam",
             "2022-05-05T14:00:00+06:00",
-            "2022-05-05T16:00:00+06:00",
+            "2022-12-05T16:00:00+06:00",
             true,
             List.of()
         );
@@ -92,8 +94,8 @@ public class ActivityTest {
             .extract().body().as(ActivityResponse.class);
 
         assertThat(updateResponse.url(), is("http://example.com/updated-test-activity"));
-        assertThat(updateResponse.starts(), is("2022-05-05T14:00+06:00"));
-        assertThat(updateResponse.ends(), is("2022-05-05T16:00+06:00"));
+        assertThat(updateResponse.starts(), is("2022-05-05T10:00+02:00"));
+        assertThat(updateResponse.ends(), is("2022-12-05T11:00+01:00"));
 
         remove(id).then().statusCode(204);
 
@@ -130,6 +132,7 @@ public class ActivityTest {
             .formParam("notes", data.getNotes())
             .formParam("url", data.getUrl())
             .formParam("location", data.getLocation())
+            .formParam("timezone", data.getTimezone())
             .formParam("starts", data.getStarts())
             .formParam("ends", data.getEnds())
             .formParam("allDay", data.isAllDay());
