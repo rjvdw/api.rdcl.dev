@@ -79,12 +79,7 @@ public class ActivityService {
 
     @Transactional
     public void deleteActivity(UUID ownerId, UUID activityId) {
-        Optional<Activity> activityOptional = getActivity(ownerId, activityId);
-
-        if (activityOptional.isPresent()) {
-            Activity activity = activityOptional.get();
-            em.remove(activity);
-        }
+        getActivity(ownerId, activityId).ifPresent(em::remove);
     }
 
 }

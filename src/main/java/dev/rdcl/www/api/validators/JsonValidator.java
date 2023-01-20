@@ -1,11 +1,12 @@
 package dev.rdcl.www.api.validators;
 
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.time.DateTimeException;
-import java.time.ZoneId;
 
-public class TimezoneValidator implements ConstraintValidator<Timezone, String> {
+public class JsonValidator implements ConstraintValidator<Json, String> {
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
@@ -14,9 +15,9 @@ public class TimezoneValidator implements ConstraintValidator<Timezone, String> 
         }
 
         try {
-            ZoneId.of(value);
+            JsonParser.parseString(value);
             return true;
-        } catch (DateTimeException ex) {
+        } catch (JsonParseException ex) {
             return false;
         }
     }
