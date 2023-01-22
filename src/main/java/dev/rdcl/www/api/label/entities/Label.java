@@ -17,13 +17,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "Label")
-@Table(name = "label")
+@Table(name = "label", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"owner", "text"}),
+})
 @NamedQueries({
     @NamedQuery(name = "Label.find", query = """
         select l
@@ -47,7 +50,7 @@ public class Label {
     @JoinColumn(name = "owner", nullable = false, updatable = false)
     private Identity owner;
 
-    @Column(name = "text", unique = true, nullable = false, length = 31)
+    @Column(name = "text", nullable = false, length = 31)
     private String text;
 
     @Column(name = "color", length = 31)
