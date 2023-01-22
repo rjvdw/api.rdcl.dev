@@ -1,12 +1,14 @@
 package dev.rdcl.www.api.health.entity;
 
 import dev.rdcl.www.api.auth.entities.Identity;
+import dev.rdcl.www.api.restconfig.validators.Json;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -65,11 +67,13 @@ public class Health {
     @ColumnDefault("now()")
     private LocalDate date;
 
+    @JsonbTransient
     @Id
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner", nullable = false, updatable = false)
     private Identity owner;
 
+    @Json
     @Column(name = "data", columnDefinition = "text")
     private String data;
 

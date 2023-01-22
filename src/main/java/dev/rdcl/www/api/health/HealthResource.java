@@ -1,9 +1,7 @@
 package dev.rdcl.www.api.health;
 
-import dev.rdcl.www.api.health.dto.ListHealthResponse;
 import dev.rdcl.www.api.health.entity.Health;
 import dev.rdcl.www.api.jwt.JwtService;
-import dev.rdcl.www.api.restconfig.validators.IsoLocalDate;
 import dev.rdcl.www.api.restconfig.validators.Json;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -42,8 +40,8 @@ public class HealthResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     public ListHealthResponse list(
-        @QueryParam("from") @Valid @IsoLocalDate String from,
-        @QueryParam("to") @Valid @IsoLocalDate String to,
+        @QueryParam("from") LocalDate from,
+        @QueryParam("to") LocalDate to,
         @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
@@ -51,14 +49,14 @@ public class HealthResource {
         if (from == null && to == null) {
             health = healthService.listRecent(ownerId);
         } else if (from == null) {
-            health = healthService.listRecent(ownerId, LocalDate.parse(to));
+            health = healthService.listRecent(ownerId, to);
         } else if (to == null) {
-            health = healthService.list(ownerId, LocalDate.parse(from));
+            health = healthService.list(ownerId, from);
         } else {
-            health = healthService.list(ownerId, LocalDate.parse(from), LocalDate.parse(to));
+            health = healthService.list(ownerId, from, to);
         }
 
-        return ListHealthResponse.from(health);
+        return new ListHealthResponse(health);
     }
 
     @PUT
@@ -66,22 +64,25 @@ public class HealthResource {
     @RolesAllowed("user")
     @Consumes(MediaType.APPLICATION_JSON)
     public void save(
-        @PathParam("date") @Valid @IsoLocalDate String date,
+        @PathParam("date") LocalDate date,
         @Context SecurityContext ctx,
         @Valid @Json String data
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
-        healthService.save(LocalDate.parse(date), ownerId, data);
+        healthService.save(date, ownerId, data);
     }
 
     @DELETE
     @Path("/{date}")
     @RolesAllowed("user")
     public void delete(
-        @PathParam("date") @Valid @IsoLocalDate String date,
+        @PathParam("date") LocalDate date,
         @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
-        healthService.delete(LocalDate.parse(date), ownerId);
+        healthService.delete(date, ownerId);
+    }
+
+    public record ListHealthResponse(List<Health> health) {
     }
 }
