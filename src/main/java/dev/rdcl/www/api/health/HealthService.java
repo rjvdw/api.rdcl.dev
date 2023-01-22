@@ -60,6 +60,13 @@ public class HealthService {
             .getResultList();
     }
 
+    public long count(UUID ownerId) {
+        return em
+            .createNamedQuery("Health.count", Long.class)
+            .setParameter("owner", ownerId)
+            .getSingleResult();
+    }
+
     @Transactional
     public void save(LocalDate date, UUID ownerId, String data) {
         Identity owner = authService.getUser(ownerId);

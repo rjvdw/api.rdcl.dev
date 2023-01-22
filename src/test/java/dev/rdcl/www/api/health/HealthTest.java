@@ -59,35 +59,40 @@ public class HealthTest {
             .get(url())
             .then()
             .statusCode(200)
-            .body("health", hasSize(10));
+            .body("health", hasSize(10))
+            .body("count", is(14));
 
         given()
             .when()
             .get(url(null, "2012-01-05"))
             .then()
             .statusCode(200)
-            .body("health", hasSize(5));
+            .body("health", hasSize(5))
+            .body("count", is(14));
 
         given()
             .when()
             .get(url("2012-01-01", null))
             .then()
             .statusCode(200)
-            .body("health", hasSize(10));
+            .body("health", hasSize(10))
+            .body("count", is(14));
 
         given()
             .when()
             .get(url("2012-01-01", "2012-01-05"))
             .then()
             .statusCode(200)
-            .body("health", hasSize(5));
+            .body("health", hasSize(5))
+            .body("count", is(14));
 
         given()
             .when()
             .get(url("2012-01-10", null))
             .then()
             .statusCode(200)
-            .body("health", hasSize(5));
+            .body("health", hasSize(5))
+            .body("count", is(14));
 
         for (LocalDate date = LocalDate.parse("2012-01-05"), upto = LocalDate.parse("2012-01-15");
              date.isBefore(upto);
@@ -105,7 +110,8 @@ public class HealthTest {
             .get(url("2012-01-01", null))
             .then()
             .statusCode(200)
-            .body("health", hasSize(4));
+            .body("health", hasSize(4))
+            .body("count", is(4));
 
         given()
             .spec(withJsonBody("[]"))
@@ -120,7 +126,8 @@ public class HealthTest {
             .then()
             .statusCode(200)
             .body("health", hasSize(1))
-            .body("health[0].data", is("[]"));
+            .body("health[0].data", is("[]"))
+            .body("count", is(4));
     }
 
     @Test

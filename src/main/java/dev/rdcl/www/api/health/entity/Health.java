@@ -59,6 +59,12 @@ import java.time.LocalDate;
         where h.owner.id = :owner
         and h.date = :date
         """),
+
+    @NamedQuery(name = "Health.count", query = """
+        select count(h.id.date)
+        from Health h
+        where h.owner.id = :owner
+        """),
 })
 public class Health {
 

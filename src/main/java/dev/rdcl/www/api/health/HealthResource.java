@@ -56,7 +56,9 @@ public class HealthResource {
             health = healthService.list(ownerId, from, to);
         }
 
-        return new ListHealthResponse(health);
+        long count = healthService.count(ownerId);
+
+        return new ListHealthResponse(health, count);
     }
 
     @PUT
@@ -83,6 +85,6 @@ public class HealthResource {
         healthService.delete(date, ownerId);
     }
 
-    public record ListHealthResponse(List<Health> health) {
+    public record ListHealthResponse(List<Health> health, long count) {
     }
 }
