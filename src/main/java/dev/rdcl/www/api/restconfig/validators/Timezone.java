@@ -1,4 +1,4 @@
-package dev.rdcl.www.api.validators;
+package dev.rdcl.www.api.restconfig.validators;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -10,10 +10,10 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {JsonValidator.class})
+@Constraint(validatedBy = {TimezoneValidator.class})
 @Documented
-public @interface Json {
-    String message() default "Invalid JSON";
+public @interface Timezone {
+    String message() default "Invalid timezone";
 
     Class<?>[] groups() default {};
 

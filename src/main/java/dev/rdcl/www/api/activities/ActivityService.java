@@ -49,32 +49,17 @@ public class ActivityService {
     @Transactional
     public void createActivity(UUID ownerId, Activity activity) {
         Identity owner = authService.getUser(ownerId);
+        activity.setId(null);
         activity.setOwner(owner);
         em.persist(activity);
     }
 
     @Transactional
-    public Optional<Activity> updateActivity(UUID ownerId, UUID activityId, Activity updatedActivity) {
-        Optional<Activity> activityOptional = getActivity(ownerId, activityId);
-
-        if (activityOptional.isPresent()) {
-            Activity activity = activityOptional.get();
-
-            activity.setTitle(updatedActivity.getTitle());
-            activity.setDescription(updatedActivity.getDescription());
-            activity.setNotes(updatedActivity.getNotes());
-            activity.setUrl(updatedActivity.getUrl());
-            activity.setLocation(updatedActivity.getLocation());
-            activity.setTimezone(updatedActivity.getTimezone());
-            activity.setStarts(updatedActivity.getStarts());
-            activity.setEnds(updatedActivity.getEnds());
-            activity.setAllDay(updatedActivity.isAllDay());
-            activity.setLabels(updatedActivity.getLabels());
-
-            em.persist(activity);
-        }
-
-        return activityOptional;
+    public void updateActivity(UUID ownerId, UUID activityId, Activity activity) {
+        Identity owner = authService.getUser(ownerId);
+        activity.setId(activityId);
+        activity.setOwner(owner);
+        em.merge(activity);
     }
 
     @Transactional

@@ -1,16 +1,11 @@
 package dev.rdcl.www.api.activities;
 
-import dev.rdcl.www.api.activities.dto.ActivityRequest;
-import dev.rdcl.www.api.activities.dto.ActivityResponse;
-import dev.rdcl.www.api.activities.dto.ListActivitiesResponse;
 import dev.rdcl.www.api.auth.fixtures.Identities;
 import dev.rdcl.www.api.jwt.JwtService;
 import dev.rdcl.www.api.util.ClockTestUtils;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,13 +13,14 @@ import org.mockito.Mockito;
 
 import javax.inject.Inject;
 import java.time.Clock;
-import java.util.List;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 
 @QuarkusTest
@@ -48,101 +44,153 @@ public class ActivityTest {
     public void testEndpoints() {
         ClockTestUtils.setTime(clock, "2000-01-01T00:00:00Z");
 
-        ActivityRequest createRequest = new ActivityRequest(
-            "test activity",
-            null,
-            null,
-            "http://example.com/test-activity",
-            "test location",
-            "Europe/Amsterdam",
-            "2022-05-05T12:00:00+06:00",
-            null,
-            false,
-            List.of()
-        );
+        String insertedId = given()
+            .formParam("title", "test activity")
+            .formParam("url", "http://example.com/test-activity")
+            .formParam("location", "test location")
+            .formParam("timezone", "Europe/Amsterdam")
+            .formParam("starts", "2022-05-05T12:00:00+06:00")
+            .formParam("allDay", false)
+            .when()
+            .post(url())
+            .then()
+            .statusCode(200)
+            .body("id", notNullValue())
+            .body("owner", nullValue())
+            .body("title", is("test activity"))
+            .body("description", nullValue())
+            .body("notes", nullValue())
+            .body("url", is("http://example.com/test-activity"))
+            .body("location", is("test location"))
+            .body("timezone", is("Europe/Amsterdam"))
+            .body("starts", is("2022-05-05T08:00+02:00"))
+            .body("ends", nullValue())
+            .body("allDay", is(false))
+            .extract()
+            .path("id");
 
-        create(createRequest).then().statusCode(200);
+        given()
+            .when()
+            .get(url())
+            .then()
+            .statusCode(200)
+            .body("activities", hasSize(1))
+            .body("activities[0].id", is(insertedId))
+            .body("activities[0].owner", nullValue())
+            .body("activities[0].url", is("http://example.com/test-activity"))
+            .body("activities[0].starts", is("2022-05-05T08:00+02:00"));
 
-        ListActivitiesResponse listResponse1 = list().then().statusCode(200)
-            .extract().body().as(ListActivitiesResponse.class);
+        given()
+            .when()
+            .get(url(insertedId))
+            .then()
+            .statusCode(200)
+            .body("id", is(insertedId))
+            .body("owner", nullValue())
+            .body("url", is("http://example.com/test-activity"))
+            .body("starts", is("2022-05-05T08:00+02:00"));
 
-        assertThat(listResponse1.activities(), hasSize(1));
-        assertThat(listResponse1.activities().get(0).url(), is("http://example.com/test-activity"));
-        assertThat(listResponse1.activities().get(0).starts(), is("2022-05-05T08:00+02:00"));
+        given()
+            .formParam("title", "updated test activity")
+            .formParam("description", "with a description")
+            .formParam("notes", "with some notes")
+            .formParam("url", "http://example.com/updated-test-activity")
+            .formParam("location", "updated test location")
+            .formParam("timezone", "America/Los_Angeles")
+            .formParam("starts", "2022-05-05T14:00:00+06:00")
+            .formParam("ends", "2022-12-05T16:00:00+06:00")
+            .formParam("allDay", true)
+            .when()
+            .put(url(insertedId))
+            .then()
+            .statusCode(200)
+            .body("id", is(insertedId))
+            .body("owner", nullValue())
+            .body("title", is("updated test activity"))
+            .body("description", is("with a description"))
+            .body("notes", is("with some notes"))
+            .body("url", is("http://example.com/updated-test-activity"))
+            .body("location", is("updated test location"))
+            .body("timezone", is("America/Los_Angeles"))
+            .body("starts", is("2022-05-05T01:00-07:00"))
+            .body("ends", is("2022-12-05T02:00-08:00"))
+            .body("allDay", is(true));
 
-        UUID id = listResponse1.activities().get(0).id();
+        given()
+            .when()
+            .delete(url(insertedId))
+            .then()
+            .statusCode(204);
 
-        ActivityResponse getResponse = get(id).then().statusCode(200)
-            .extract().body().as(ActivityResponse.class);
-
-        assertThat(getResponse, is(listResponse1.activities().get(0)));
-
-        ActivityRequest updateRequest = new ActivityRequest(
-            "updated test activity",
-            "with a description",
-            "with some notes",
-            "http://example.com/updated-test-activity",
-            "updated test location",
-            "Europe/Amsterdam",
-            "2022-05-05T14:00:00+06:00",
-            "2022-12-05T16:00:00+06:00",
-            true,
-            List.of()
-        );
-
-        ActivityResponse updateResponse = update(id, updateRequest).then().statusCode(200)
-            .extract().body().as(ActivityResponse.class);
-
-        assertThat(updateResponse.url(), is("http://example.com/updated-test-activity"));
-        assertThat(updateResponse.starts(), is("2022-05-05T10:00+02:00"));
-        assertThat(updateResponse.ends(), is("2022-12-05T11:00+01:00"));
-
-        remove(id).then().statusCode(204);
-
-        ListActivitiesResponse listResponse2 = list().then().statusCode(200)
-            .extract().body().as(ListActivitiesResponse.class);
-
-        assertThat(listResponse2.activities(), hasSize(0));
+        given()
+            .when()
+            .get(url())
+            .then()
+            .statusCode(200)
+            .body("activities", hasSize(0));
     }
 
-    private Response list() {
-        return given().when().get(url());
+    @Test
+    @TestSecurity(user = "john.doe@example.com", roles = {"user"})
+    @DisplayName("User is not allowed to specify their own IDs")
+    public void testDisallowSpecifyingId() {
+        String id = UUID.randomUUID().toString();
+
+        String insertedId = given()
+            .formParam("id", id)
+            .formParam("title", "test activity")
+            .formParam("location", "test location")
+            .formParam("timezone", "Europe/Amsterdam")
+            .formParam("starts", "2022-05-05T12:00:00+06:00")
+            .formParam("allDay", false)
+            .when()
+            .post(url())
+            .then()
+            .statusCode(200)
+            .body("id", is(not(id)))
+            .extract()
+            .path("id");
+
+        given()
+            .formParam("id", id)
+            .formParam("title", "test activity")
+            .formParam("location", "test location")
+            .formParam("timezone", "Europe/Amsterdam")
+            .formParam("starts", "2022-05-05T12:00:00+06:00")
+            .formParam("allDay", false)
+            .when()
+            .put(url(insertedId))
+            .then()
+            .statusCode(200)
+            .body("id", is(insertedId));
     }
 
-    private Response get(UUID id) {
-        return given().when().get(url(id));
-    }
+    @Test
+    @TestSecurity(user = "john.doe@example.com", roles = {"user"})
+    @DisplayName("User input is validated")
+    public void testValidation() {
+        // no parameters
+        given()
+            .when().post(url())
+            .then()
+            .statusCode(400);
 
-    private Response create(ActivityRequest data) {
-        return withData(data).when().post(url());
-    }
-
-    private Response update(UUID id, ActivityRequest data) {
-        return withData(data).when().put(url(id));
-    }
-
-    private Response remove(UUID id) {
-        return given().when().delete(url(id));
-    }
-
-    private RequestSpecification withData(ActivityRequest data) {
-        return given()
-            .formParam("title", data.getTitle())
-            .formParam("description", data.getDescription())
-            .formParam("notes", data.getNotes())
-            .formParam("url", data.getUrl())
-            .formParam("location", data.getLocation())
-            .formParam("timezone", data.getTimezone())
-            .formParam("starts", data.getStarts())
-            .formParam("ends", data.getEnds())
-            .formParam("allDay", data.isAllDay());
+        // invalid date
+        given()
+            .formParam("title", "test activity")
+            .formParam("location", "test location")
+            .formParam("timezone", "Europe/Amsterdam")
+            .formParam("starts", "not a valid date")
+            .when().post(url())
+            .then()
+            .statusCode(400);
     }
 
     private String url() {
         return "/activity";
     }
 
-    private String url(UUID id) {
+    private String url(Object id) {
         return "/activity/%s".formatted(id);
     }
 

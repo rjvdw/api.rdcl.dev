@@ -136,12 +136,12 @@ public class ActivityServiceTest {
             .owner(owner)
             .title(title)
             .location("Test location")
+            .timezone(starts.getZone().toString())
             .allDay(allDay)
             .build();
 
-        activity.setZoneId(starts.getZone());
-        activity.setStarts(starts);
-        activity.setEnds(ends);
+        activity.setStartsFromZoned(starts);
+        activity.setEndsFromZoned(ends);
 
         em.persist(activity);
 

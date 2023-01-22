@@ -3,8 +3,8 @@ package dev.rdcl.www.api.health;
 import dev.rdcl.www.api.health.dto.ListHealthResponse;
 import dev.rdcl.www.api.health.entity.Health;
 import dev.rdcl.www.api.jwt.JwtService;
-import dev.rdcl.www.api.validators.IsoLocalDate;
-import dev.rdcl.www.api.validators.Json;
+import dev.rdcl.www.api.restconfig.validators.IsoLocalDate;
+import dev.rdcl.www.api.restconfig.validators.Json;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 

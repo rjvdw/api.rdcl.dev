@@ -1,4 +1,4 @@
-package dev.rdcl.www.api.validators;
+package dev.rdcl.www.api.restconfig.validators;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -10,10 +10,10 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {IsoInstantValidator.class})
+@Constraint(validatedBy = {IsoLocalDateValidator.class})
 @Documented
-public @interface IsoInstant {
-    String message() default "Invalid date-time";
+public @interface IsoLocalDate {
+    String message() default "Invalid date";
 
     Class<?>[] groups() default {};
 

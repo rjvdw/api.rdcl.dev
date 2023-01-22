@@ -1,4 +1,4 @@
-package dev.rdcl.www.api.validators;
+package dev.rdcl.www.api.restconfig.validators;
 
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;

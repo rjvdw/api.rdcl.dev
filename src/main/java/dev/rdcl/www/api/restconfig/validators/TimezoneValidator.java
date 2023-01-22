@@ -1,11 +1,11 @@
-package dev.rdcl.www.api.validators;
+package dev.rdcl.www.api.restconfig.validators;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
+import java.time.DateTimeException;
+import java.time.ZoneId;
 
-public class IsoLocalDateValidator implements ConstraintValidator<IsoLocalDate, String> {
+public class TimezoneValidator implements ConstraintValidator<Timezone, String> {
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
@@ -14,9 +14,9 @@ public class IsoLocalDateValidator implements ConstraintValidator<IsoLocalDate, 
         }
 
         try {
-            LocalDate.parse(value);
+            ZoneId.of(value);
             return true;
-        } catch (DateTimeParseException ex) {
+        } catch (DateTimeException ex) {
             return false;
         }
     }

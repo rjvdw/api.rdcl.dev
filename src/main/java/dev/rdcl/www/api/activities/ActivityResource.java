@@ -1,12 +1,7 @@
 package dev.rdcl.www.api.activities;
 
-import dev.rdcl.www.api.activities.dto.ActivityRequest;
-import dev.rdcl.www.api.activities.dto.ActivityResponse;
-import dev.rdcl.www.api.activities.dto.ListActivitiesResponse;
 import dev.rdcl.www.api.activities.entities.Activity;
 import dev.rdcl.www.api.jwt.JwtService;
-import dev.rdcl.www.api.validators.IsoInstant;
-import dev.rdcl.www.api.validators.IsoInstantValidator;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
@@ -47,48 +42,48 @@ public class ActivityResource {
     @GET
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
-    public ListActivitiesResponse list(
+    public ListResponse list(
         @Context SecurityContext ctx,
         @QueryParam("past") @DefaultValue("false") boolean getPastActivities,
-        @QueryParam("when") @Valid @IsoInstant String whenParam
+        @QueryParam("when") Instant when
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
-        Instant when = IsoInstantValidator.parse(whenParam, () -> Instant.now(clock));
+        if (when == null) {
+            when = Instant.now(clock);
+        }
 
         List<Activity> activities = getPastActivities
             ? activityService.getPastActivities(ownerId, when)
             : activityService.getUpcomingActivities(ownerId, when);
 
-        return ListActivitiesResponse.from(activities);
+        return new ListResponse(activities);
     }
 
     @GET
     @Path("/{uuid}")
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
-    public Optional<ActivityResponse> get(
+    public Optional<Activity> get(
         @PathParam("uuid") UUID activityId,
         @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
 
-        return activityService.getActivity(ownerId, activityId)
-            .map(ActivityResponse::from);
+        return activityService.getActivity(ownerId, activityId);
     }
 
     @POST
     @RolesAllowed("user")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public ActivityResponse create(
-        @BeanParam @Valid ActivityRequest request,
+    public Activity create(
+        @BeanParam @Valid Activity activity,
         @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
-        Activity activity = request.toActivity();
         activityService.createActivity(ownerId, activity);
 
-        return ActivityResponse.from(activity);
+        return activity;
     }
 
     @PUT
@@ -96,16 +91,15 @@ public class ActivityResource {
     @RolesAllowed("user")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public Optional<ActivityResponse> update(
+    public Activity update(
         @PathParam("uuid") UUID activityId,
-        @BeanParam @Valid ActivityRequest request,
+        @BeanParam @Valid Activity activity,
         @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
-        Activity activity = request.toActivity();
+        activityService.updateActivity(ownerId, activityId, activity);
 
-        return activityService.updateActivity(ownerId, activityId, activity)
-            .map(ActivityResponse::from);
+        return activity;
     }
 
     @DELETE
@@ -117,5 +111,8 @@ public class ActivityResource {
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         activityService.deleteActivity(ownerId, activityId);
+    }
+
+    public static record ListResponse(List<Activity> activities) {
     }
 }
