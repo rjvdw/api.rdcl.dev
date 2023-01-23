@@ -15,6 +15,10 @@ public class ZonedDateTimeConverterProvider implements ParamConverterProvider {
     private static final ParamConverter<ZonedDateTime> zonedDateTimeParamConverter = new ParamConverter<>() {
         @Override
         public ZonedDateTime fromString(String value) {
+            if (value == null || value.isBlank()) {
+                return null;
+            }
+
             try {
                 return ZonedDateTime.parse(value);
             } catch (DateTimeParseException ex) {

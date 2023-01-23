@@ -15,6 +15,10 @@ public class InstantConverterProvider implements ParamConverterProvider {
     private static final ParamConverter<Instant> instantConverter = new ParamConverter<>() {
         @Override
         public Instant fromString(String value) {
+            if (value == null || value.isBlank()) {
+                return null;
+            }
+
             try {
                 return Instant.parse(value);
             } catch (DateTimeParseException ex) {

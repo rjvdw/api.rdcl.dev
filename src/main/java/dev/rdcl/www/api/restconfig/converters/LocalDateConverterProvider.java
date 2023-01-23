@@ -15,6 +15,10 @@ public class LocalDateConverterProvider implements ParamConverterProvider {
     private static final ParamConverter<LocalDate> localDateConverter = new ParamConverter<>() {
         @Override
         public LocalDate fromString(String value) {
+            if (value == null || value.isBlank()) {
+                return null;
+            }
+
             try {
                 return LocalDate.parse(value);
             } catch (DateTimeParseException ex) {
