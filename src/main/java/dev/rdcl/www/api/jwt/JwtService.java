@@ -1,6 +1,7 @@
 package dev.rdcl.www.api.jwt;
 
 import dev.rdcl.www.api.auth.entities.Identity;
+import dev.rdcl.www.api.util.Resources;
 import io.smallrye.jwt.build.Jwt;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -9,6 +10,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
@@ -19,6 +21,16 @@ import java.util.UUID;
 public class JwtService {
 
     private final JwtProperties jwtProperties;
+
+    /**
+     * Returns the key that is used to verify tokens.
+     *
+     * @return The public key.
+     * @throws IOException When the file could not be read.
+     */
+    public byte[] getPublicKey() throws IOException {
+        return Resources.readResource(jwtProperties.publicKeyLocation());
+    }
 
     /**
      * Issue an authorization token.

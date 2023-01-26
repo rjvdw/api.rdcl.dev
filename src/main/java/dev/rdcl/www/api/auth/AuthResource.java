@@ -22,9 +22,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -39,6 +41,18 @@ public class AuthResource {
     private final JwtService jwtService;
 
     private final JsonWebToken jwt;
+
+    @GET
+    @Path("/key")
+    @PermitAll
+    @Produces(MediaType.TEXT_PLAIN)
+    public byte[] key() {
+        try {
+            return jwtService.getPublicKey();
+        } catch (IOException ex) {
+            throw new WebApplicationException("Unable to read public key", ex);
+        }
+    }
 
     @GET
     @Path("/me")

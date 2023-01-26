@@ -12,4 +12,7 @@ public interface JwtProperties {
 
     @WithDefault("PT4H")
     Duration authTokenExpiry();
+
+    @WithDefault("${mp.jwt.verify.publickey.location}")
+    String publicKeyLocation();
 }

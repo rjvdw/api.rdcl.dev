@@ -20,7 +20,9 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 
 @QuarkusTest
 public class AuthTest {
@@ -33,6 +35,18 @@ public class AuthTest {
 
     @InjectMock
     AuthMailService authMailService;
+
+    @Test
+    @DisplayName("The public key used to verify an authentication token can be retrieved")
+    public void testKey() {
+        given()
+            .when()
+            .get("/auth/key")
+            .then()
+            .statusCode(200)
+            .body(startsWith("-----BEGIN PUBLIC KEY-----"))
+            .body(endsWith("-----END PUBLIC KEY-----\n"));
+    }
 
     @Test
     @DisplayName("When an existing user tries to log in, they get a session token, and a verification code is mailed")
