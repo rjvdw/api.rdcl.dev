@@ -6,3 +6,6 @@
 /.flattened-pom.xml
 /.env
 /flyway.conf
+
+/src/main/resources/private-key.pem
+/src/main/resources/public-key.pem
