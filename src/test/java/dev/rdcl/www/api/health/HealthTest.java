@@ -68,7 +68,7 @@ public class HealthTest {
             .then()
             .statusCode(200)
             .body("health", hasSize(5))
-            .body("count", is(14));
+            .body("count", is(5));
 
         given()
             .when()
@@ -84,7 +84,7 @@ public class HealthTest {
             .then()
             .statusCode(200)
             .body("health", hasSize(5))
-            .body("count", is(14));
+            .body("count", is(5));
 
         given()
             .when()
@@ -92,7 +92,7 @@ public class HealthTest {
             .then()
             .statusCode(200)
             .body("health", hasSize(5))
-            .body("count", is(14));
+            .body("count", is(5));
 
         for (LocalDate date = LocalDate.parse("2012-01-05"), upto = LocalDate.parse("2012-01-15");
              date.isBefore(upto);
@@ -127,7 +127,7 @@ public class HealthTest {
             .statusCode(200)
             .body("health", hasSize(1))
             .body("health[0].data", is("[]"))
-            .body("count", is(4));
+            .body("count", is(1));
     }
 
     @Test

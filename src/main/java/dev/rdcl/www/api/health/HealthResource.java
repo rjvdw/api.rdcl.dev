@@ -46,17 +46,21 @@ public class HealthResource {
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         List<Health> health;
+        long count;
         if (from == null && to == null) {
-            health = healthService.listRecent(ownerId);
+            LocalDate now = LocalDate.now(clock);
+            health = healthService.findBefore(ownerId, now);
+            count = healthService.countBefore(ownerId, now);
         } else if (from == null) {
-            health = healthService.listRecent(ownerId, to);
+            health = healthService.findBefore(ownerId, to);
+            count = healthService.countBefore(ownerId, to);
         } else if (to == null) {
-            health = healthService.list(ownerId, from);
+            health = healthService.findAfter(ownerId, from);
+            count = healthService.countAfter(ownerId, from);
         } else {
-            health = healthService.list(ownerId, from, to);
+            health = healthService.findBetween(ownerId, from, to);
+            count = healthService.countBetween(ownerId, from, to);
         }
-
-        long count = healthService.count(ownerId);
 
         return new ListHealthResponse(health, count);
     }

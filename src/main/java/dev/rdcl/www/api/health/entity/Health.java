@@ -29,11 +29,11 @@ import java.time.LocalDate;
 @IdClass(HealthKey.class)
 @Table(name = "health")
 @NamedQueries({
-    @NamedQuery(name = "Health.findRecent", query = """
+    @NamedQuery(name = "Health.findBefore", query = """
         select h
         from Health h
         where h.owner.id = :owner
-        and h.date <= :now
+        and h.date <= :to
         order by h.date desc
         """),
 
@@ -42,7 +42,7 @@ import java.time.LocalDate;
         from Health h
         where h.owner.id = :owner
         and h.date >= :from
-        order by h.date
+        order by h.date desc
         """),
 
     @NamedQuery(name = "Health.findBetween", query = """
@@ -50,7 +50,7 @@ import java.time.LocalDate;
         from Health h
         where h.owner.id = :owner
         and h.date between :from and :to
-        order by h.date
+        order by h.date desc
         """),
 
     @NamedQuery(name = "Health.findByDate", query = """
@@ -64,6 +64,27 @@ import java.time.LocalDate;
         select count(h.id.date)
         from Health h
         where h.owner.id = :owner
+        """),
+
+    @NamedQuery(name = "Health.countBefore", query = """
+        select count(h.id.date)
+        from Health h
+        where h.owner.id = :owner
+        and h.date <= :to
+        """),
+
+    @NamedQuery(name = "Health.countAfter", query = """
+        select count(h.id.date)
+        from Health h
+        where h.owner.id = :owner
+        and h.date >= :from
+        """),
+
+    @NamedQuery(name = "Health.countBetween", query = """
+        select count(h.id.date)
+        from Health h
+        where h.owner.id = :owner
+        and h.date between :from and :to
         """),
 })
 public class Health {

@@ -26,22 +26,18 @@ public class HealthService {
 
     private final Clock clock;
 
-    public List<Health> listRecent(UUID ownerId) {
-        return listRecent(ownerId, LocalDate.now(clock));
-    }
-
-    public List<Health> listRecent(UUID ownerId, LocalDate upto) {
+    public List<Health> findBefore(UUID ownerId, LocalDate to) {
         return em
-            .createNamedQuery("Health.findRecent", Health.class)
+            .createNamedQuery("Health.findBefore", Health.class)
             .setParameter("owner", ownerId)
-            .setParameter("now", upto)
+            .setParameter("to", to)
             .setMaxResults(healthProperties.maxResults())
             .getResultStream()
             .sorted(Comparator.comparing(Health::getDate))
             .toList();
     }
 
-    public List<Health> list(UUID ownerId, LocalDate from) {
+    public List<Health> findAfter(UUID ownerId, LocalDate from) {
         return em
             .createNamedQuery("Health.findAfter", Health.class)
             .setParameter("owner", ownerId)
@@ -50,7 +46,7 @@ public class HealthService {
             .getResultList();
     }
 
-    public List<Health> list(UUID ownerId, LocalDate from, LocalDate to) {
+    public List<Health> findBetween(UUID ownerId, LocalDate from, LocalDate to) {
         return em
             .createNamedQuery("Health.findBetween", Health.class)
             .setParameter("owner", ownerId)
@@ -60,10 +56,28 @@ public class HealthService {
             .getResultList();
     }
 
-    public long count(UUID ownerId) {
+    public long countBefore(UUID ownerId, LocalDate to) {
         return em
-            .createNamedQuery("Health.count", Long.class)
+            .createNamedQuery("Health.countBefore", Long.class)
             .setParameter("owner", ownerId)
+            .setParameter("to", to)
+            .getSingleResult();
+    }
+
+    public long countAfter(UUID ownerId, LocalDate from) {
+        return em
+            .createNamedQuery("Health.countAfter", Long.class)
+            .setParameter("owner", ownerId)
+            .setParameter("from", from)
+            .getSingleResult();
+    }
+
+    public long countBetween(UUID ownerId, LocalDate from, LocalDate to) {
+        return em
+            .createNamedQuery("Health.countBetween", Long.class)
+            .setParameter("owner", ownerId)
+            .setParameter("from", from)
+            .setParameter("to", to)
             .getSingleResult();
     }
 
