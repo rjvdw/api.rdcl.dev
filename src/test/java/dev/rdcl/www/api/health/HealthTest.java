@@ -17,6 +17,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,6 +39,36 @@ public class HealthTest {
 
     @Test
     @TestSecurity(user = "john.doe@example.com", roles = {"user"})
+    @DisplayName("Fetch and update health settings")
+    public void testSettingsEndpoints() {
+        given()
+            .when()
+            .get("/health/settings")
+            .then()
+            .statusCode(200)
+            .contentType("application/json")
+            .body("", aMapWithSize(0));
+
+        given()
+            .contentType("application/json")
+            .body("{\"height\": 170}")
+            .when()
+            .post("/health/settings")
+            .then()
+            .statusCode(204);
+
+        given()
+            .when()
+            .get("/health/settings")
+            .then()
+            .statusCode(200)
+            .contentType("application/json")
+            .body("", aMapWithSize(1))
+            .body("height", is(170));
+    }
+
+    @Test
+    @TestSecurity(user = "john.doe@example.com", roles = {"user"})
     @DisplayName("Create health records, update health records, delete health records")
     public void testEndpoints() {
         ClockTestUtils.setTime(clock, "2012-01-15T12:00:00Z");
@@ -47,7 +78,8 @@ public class HealthTest {
              date = date.plusDays(1)
         ) {
             given()
-                .spec(withJsonBody("{}"))
+                .contentType("application/json")
+                .body("{}")
                 .when()
                 .put(url(date))
                 .then()
@@ -114,7 +146,8 @@ public class HealthTest {
             .body("count", is(4));
 
         given()
-            .spec(withJsonBody("[]"))
+            .contentType("application/json")
+            .body("[]")
             .when()
             .put(url("2012-01-01"))
             .then()
@@ -136,7 +169,8 @@ public class HealthTest {
     public void testRejectInvalidJson() {
 
         given()
-            .spec(withJsonBody("}{"))
+            .body("}{")
+            .contentType("application/json")
             .when()
             .put(url("2012-01-01"))
             .then()
@@ -156,11 +190,5 @@ public class HealthTest {
         if (from != null) return "/health?from=%s".formatted(from);
         if (to != null) return "/health?to=%s".formatted(to);
         return url();
-    }
-
-    private RequestSpecification withJsonBody(String data) {
-        return given()
-            .header("Content-Type", "application/json")
-            .body(data);
     }
 }

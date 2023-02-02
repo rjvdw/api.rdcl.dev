@@ -3,15 +3,16 @@ package dev.rdcl.www.api.health;
 import dev.rdcl.www.api.auth.AuthService;
 import dev.rdcl.www.api.auth.entities.Identity;
 import dev.rdcl.www.api.health.entity.Health;
+import dev.rdcl.www.api.health.entity.HealthSettings;
 import lombok.RequiredArgsConstructor;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -24,7 +25,36 @@ public class HealthService {
 
     private final EntityManager em;
 
-    private final Clock clock;
+    public String getSettings(UUID ownerId) {
+        return em
+            .createNamedQuery("HealthSettings.get", HealthSettings.class)
+            .setParameter("owner", ownerId)
+            .getResultStream()
+            .findAny()
+            .map(HealthSettings::getSettings)
+            .orElse("{}");
+    }
+
+    @Transactional
+    public void saveSettings(UUID ownerId, String settings) {
+        Optional<HealthSettings> result = em
+            .createNamedQuery("HealthSettings.get", HealthSettings.class)
+            .setParameter("owner", ownerId)
+            .getResultStream()
+            .findAny();
+
+        if (result.isPresent()) {
+            result.get().setSettings(settings);
+            em.merge(result.get());
+        } else {
+            Identity owner = authService.getUser(ownerId);
+            HealthSettings entity = HealthSettings.builder()
+                .owner(owner)
+                .settings(settings)
+                .build();
+            em.persist(entity);
+        }
+    }
 
     public List<Health> findBefore(UUID ownerId, LocalDate to) {
         return em

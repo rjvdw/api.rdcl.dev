@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -35,6 +36,30 @@ public class HealthResource {
     private final JsonWebToken jwt;
 
     private final Clock clock;
+
+    @GET
+    @Path("/settings")
+    @RolesAllowed("user")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getSettings(
+        @Context SecurityContext ctx
+    ) {
+        UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
+
+        return healthService.getSettings(ownerId);
+    }
+
+    @POST
+    @Path("/settings")
+    @RolesAllowed("user")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void saveSettings(
+        @Context SecurityContext ctx,
+        @Valid @Json String settings
+    ) {
+        UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
+        healthService.saveSettings(ownerId, settings);
+    }
 
     @GET
     @RolesAllowed("user")
