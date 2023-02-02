@@ -1,6 +1,7 @@
 package dev.rdcl.www.api.label.entities;
 
 import dev.rdcl.www.api.auth.entities.Identity;
+import dev.rdcl.www.api.restconfig.validators.Json;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -53,9 +54,7 @@ public class Label {
     @Column(name = "text", nullable = false, length = 31)
     private String text;
 
-    @Column(name = "color", length = 31)
-    private String color;
-
-    @Column(name = "text_color", length = 31)
-    private String textColor;
+    @Json
+    @Column(name = "styles", columnDefinition = "text")
+    private String styles;
 }

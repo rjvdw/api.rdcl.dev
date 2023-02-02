@@ -1,9 +1,9 @@
 package dev.rdcl.www.api.label;
 
 import dev.rdcl.www.api.jwt.JwtService;
-import dev.rdcl.www.api.label.dto.LabelConfig;
 import dev.rdcl.www.api.label.dto.ListLabelsResponse;
 import dev.rdcl.www.api.label.entities.Label;
+import dev.rdcl.www.api.restconfig.validators.Json;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
@@ -47,7 +47,7 @@ public class LabelResource {
     @RolesAllowed("user")
     @Consumes(MediaType.APPLICATION_JSON)
     public void update(
-        @Valid Map<@NotNull @Size(max = 31) String, @NotNull LabelConfig> labelConfigs,
+        @Valid Map<@NotNull @Size(max = 31) String, @NotNull @Json String> labelConfigs,
         @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
@@ -55,8 +55,7 @@ public class LabelResource {
             .stream()
             .map(entry -> Label.builder()
                 .text(entry.getKey())
-                .color(entry.getValue().color())
-                .textColor(entry.getValue().textColor())
+                .styles(entry.getValue())
                 .build())
             .toList();
 

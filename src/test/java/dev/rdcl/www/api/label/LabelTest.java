@@ -2,7 +2,6 @@ package dev.rdcl.www.api.label;
 
 import dev.rdcl.www.api.auth.fixtures.Identities;
 import dev.rdcl.www.api.jwt.JwtService;
-import dev.rdcl.www.api.label.dto.LabelConfig;
 import dev.rdcl.www.api.label.dto.ListLabelsResponse;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -37,11 +36,11 @@ public class LabelTest {
     @TestSecurity(user = "john.doe@example.com", roles = {"user"})
     @DisplayName("User creates and then fetches labels")
     public void testEndpoints() {
-        Map<String, LabelConfig> labels = Map.of(
-            "label1", new LabelConfig(null, null),
-            "label2", new LabelConfig("#000", "#fff"),
-            "label3", new LabelConfig("red", null),
-            "label4", new LabelConfig("#f8f8f8", "#000")
+        Map<String, String> labels = Map.of(
+            "label1", "{}",
+            "label2", "{\"background-color\":\"#000\",\"color\":\"#fff\"}",
+            "label3", "{\"background-color\":\"red\"}",
+            "label4", "{\"background-color\":\"#f8f8f8\",\"color\":\"#000\"}"
         );
 
         update(labels).then().statusCode(204);
@@ -51,15 +50,15 @@ public class LabelTest {
             .extract().as(ListLabelsResponse.class);
 
         assertThat(response.labels().keySet(), hasSize(4));
-        assertThat(response.labels(), hasEntry("label1", new LabelConfig(null, null)));
-        assertThat(response.labels(), hasEntry("label2", new LabelConfig("#000", "#fff")));
-        assertThat(response.labels(), hasEntry("label3", new LabelConfig("red", null)));
-        assertThat(response.labels(), hasEntry("label4", new LabelConfig("#f8f8f8", "#000")));
+        assertThat(response.labels(), hasEntry("label1", "{}"));
+        assertThat(response.labels(), hasEntry("label2", "{\"background-color\":\"#000\",\"color\":\"#fff\"}"));
+        assertThat(response.labels(), hasEntry("label3", "{\"background-color\":\"red\"}"));
+        assertThat(response.labels(), hasEntry("label4", "{\"background-color\":\"#f8f8f8\",\"color\":\"#000\"}"));
 
         labels = Map.of(
-            "label3", new LabelConfig("red", null),
-            "label4", new LabelConfig("#000", "#fff"),
-            "label5", new LabelConfig(null, null)
+            "label3", "{\"background-color\":\"red\"}",
+            "label4", "{\"background-color\":\"#000\",\"color\":\"#fff\"}",
+            "label5", "{}"
         );
 
         update(labels).then().statusCode(204);
@@ -69,9 +68,9 @@ public class LabelTest {
             .extract().as(ListLabelsResponse.class);
 
         assertThat(response.labels().keySet(), hasSize(3));
-        assertThat(response.labels(), hasEntry("label3", new LabelConfig("red", null)));
-        assertThat(response.labels(), hasEntry("label4", new LabelConfig("#000", "#fff")));
-        assertThat(response.labels(), hasEntry("label5", new LabelConfig(null, null)));
+        assertThat(response.labels(), hasEntry("label3", "{\"background-color\":\"red\"}"));
+        assertThat(response.labels(), hasEntry("label4", "{\"background-color\":\"#000\",\"color\":\"#fff\"}"));
+        assertThat(response.labels(), hasEntry("label5", "{}"));
     }
 
     private Response get() {
@@ -79,7 +78,7 @@ public class LabelTest {
             .when().get("/label");
     }
 
-    private Response update(Map<String, LabelConfig> labels) {
+    private Response update(Map<String, String> labels) {
         return given()
             .body(labels)
             .header("Content-Type", "application/json")
