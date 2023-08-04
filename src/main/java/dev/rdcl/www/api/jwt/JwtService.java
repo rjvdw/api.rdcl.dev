@@ -3,13 +3,13 @@ package dev.rdcl.www.api.jwt;
 import dev.rdcl.www.api.auth.entities.Identity;
 import dev.rdcl.www.api.util.Resources;
 import io.smallrye.jwt.build.Jwt;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Optional;

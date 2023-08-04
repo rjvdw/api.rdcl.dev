@@ -5,11 +5,11 @@ import dev.rdcl.www.api.auth.entities.LoginAttempt;
 import dev.rdcl.www.api.auth.errors.LoginAttemptNotFound;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;

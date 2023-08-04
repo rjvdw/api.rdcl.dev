@@ -2,12 +2,12 @@ package dev.rdcl.www.api.auth;
 
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.event.Observes;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.RequiredArgsConstructor;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
-import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.List;
 

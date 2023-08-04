@@ -3,11 +3,11 @@ package dev.rdcl.www.api.label;
 import dev.rdcl.www.api.auth.AuthService;
 import dev.rdcl.www.api.auth.entities.Identity;
 import dev.rdcl.www.api.label.entities.Label;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 

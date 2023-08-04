@@ -3,11 +3,11 @@ package dev.rdcl.www.api.activities;
 import dev.rdcl.www.api.activities.entities.Activity;
 import dev.rdcl.www.api.auth.AuthService;
 import dev.rdcl.www.api.auth.entities.Identity;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

@@ -7,13 +7,13 @@ import dev.rdcl.www.api.auth.errors.InvalidCallback;
 import dev.rdcl.www.api.auth.errors.LoginAttemptNotFound;
 import dev.rdcl.www.api.auth.errors.UserNotFound;
 import io.quarkus.scheduler.Scheduled;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.transaction.Transactional;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.time.Instant;

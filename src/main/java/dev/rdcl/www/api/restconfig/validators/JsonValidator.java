@@ -2,9 +2,8 @@ package dev.rdcl.www.api.restconfig.validators;
 
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 public class JsonValidator implements ConstraintValidator<Json, String> {
 
