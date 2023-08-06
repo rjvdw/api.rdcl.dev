@@ -40,7 +40,7 @@ public class AuthMailServiceTest {
 
         authMailService.consume(event);
 
-        List<Mail> mails = mailbox.getMessagesSentTo(Identities.VALID_IDENTITY.getEmail());
+        List<Mail> mails = mailbox.getMailsSentTo(Identities.VALID_IDENTITY.getEmail());
         assertThat(mails, hasSize(1));
 
         Mail mail = mails.get(0);

@@ -113,6 +113,6 @@ public class ActivityResource {
         activityService.deleteActivity(ownerId, activityId);
     }
 
-    public static record ListResponse(List<Activity> activities) {
+    public record ListResponse(List<Activity> activities) {
     }
 }
