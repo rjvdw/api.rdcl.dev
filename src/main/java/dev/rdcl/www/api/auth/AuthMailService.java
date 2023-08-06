@@ -3,8 +3,6 @@ package dev.rdcl.www.api.auth;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Event;
-import jakarta.enterprise.event.Observes;
 import jakarta.ws.rs.core.UriBuilder;
 import lombok.RequiredArgsConstructor;
 
@@ -19,33 +17,25 @@ public class AuthMailService {
 
     private final Mailer mailer;
 
-    private final Event<VerificationMailEvent> verificationMailEvent;
-
     public void sendVerificationMail(String recipient, String verificationCode, URI callback) {
-        VerificationMailEvent event = new VerificationMailEvent(recipient, verificationCode, callback);
-        verificationMailEvent.fire(event);
-    }
-
-    public void consume(@Observes VerificationMailEvent event) {
-        String recipient = event.recipient();
-        URI callback = buildCallback(event.callback(), event.verificationCode());
+        URI loginLink = buildLoginLink(callback, verificationCode);
 
         Mail mail = new Mail();
 
         mail.setFrom(authProperties.verificationEmailFrom());
         mail.setTo(List.of(recipient));
         mail.setSubject("Login request");
-        mail.setText("Go to %s to verify your login attempt.".formatted(callback));
+        mail.setText("Go to %s to verify your login attempt.".formatted(loginLink));
         mail.setHtml("""
             <p>
                 <a href="%s">Click here to verify your login attempt.</a>
             </p>
-            """.formatted(callback));
+            """.formatted(loginLink));
 
         mailer.send(mail);
     }
 
-    private URI buildCallback(URI baseUri, String verificationCode) {
+    private URI buildLoginLink(URI baseUri, String verificationCode) {
         return UriBuilder.fromUri(baseUri == null ? defaultCallback() : baseUri)
             .queryParam("verification-code", verificationCode)
             .build();
@@ -53,9 +43,6 @@ public class AuthMailService {
 
     private URI defaultCallback() {
         return URI.create(authProperties.defaultLoginCallbackUrl());
-    }
-
-    public record VerificationMailEvent(String recipient, String verificationCode, URI callback) {
     }
 
 }

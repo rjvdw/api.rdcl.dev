@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static dev.rdcl.www.api.auth.TestUtils.extractVerificationCode;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -31,14 +32,12 @@ public class AuthMailServiceTest {
 
     @Test
     @DisplayName("A mail with a verification code is sent when a user tries to log in")
-    public void testConsume() {
-        AuthMailService.VerificationMailEvent event = new AuthMailService.VerificationMailEvent(
+    public void testSendVerificationMail() {
+        authMailService.sendVerificationMail(
             Identities.VALID_IDENTITY.getEmail(),
             "my-verification-code",
             null
         );
-
-        authMailService.consume(event);
 
         List<Mail> mails = mailbox.getMailsSentTo(Identities.VALID_IDENTITY.getEmail());
         assertThat(mails, hasSize(1));
@@ -47,23 +46,5 @@ public class AuthMailServiceTest {
 
         assertThat(extractVerificationCode(mail), is("my-verification-code"));
     }
-
-    private String extractVerificationCode(Mail mail) {
-        String html = mail.getHtml();
-
-        int from = html.indexOf("verification-code=");
-        if (from == -1) {
-            return null;
-        }
-        from += "verification-code=".length();
-
-        int to = html.indexOf("\"", from);
-        if (to == -1) {
-            return null;
-        }
-
-        return html.substring(from, to);
-    }
-
 
 }

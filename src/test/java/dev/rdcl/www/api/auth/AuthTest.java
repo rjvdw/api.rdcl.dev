@@ -2,25 +2,31 @@ package dev.rdcl.www.api.auth;
 
 import dev.rdcl.www.api.auth.dto.LoginResponse;
 import dev.rdcl.www.api.auth.dto.VerificationResponse;
+import dev.rdcl.www.api.auth.events.InitiateLoginAttemptCompleteEvent;
 import dev.rdcl.www.api.auth.fixtures.Identities;
 import dev.rdcl.www.api.jwt.JwtService;
-import io.quarkus.test.InjectMock;
+import io.quarkus.mailer.Mail;
+import io.quarkus.mailer.MockMailbox;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import io.smallrye.jwt.auth.principal.JWTParser;
+import jakarta.enterprise.event.ObservesAsync;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
-import java.net.URI;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import static dev.rdcl.www.api.auth.TestUtils.extractVerificationCode;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 
@@ -33,8 +39,20 @@ public class AuthTest {
     @Inject
     JWTParser jwtParser;
 
-    @InjectMock
-    AuthMailService authMailService;
+    @Inject
+    MockMailbox mailbox;
+
+    CountDownLatch pendingVerifications = new CountDownLatch(0);
+
+    @BeforeEach
+    public void setup() {
+        mailbox.clear();
+        pendingVerifications = new CountDownLatch(0);
+    }
+
+    public void consume(@ObservesAsync InitiateLoginAttemptCompleteEvent event) {
+        pendingVerifications.countDown();
+    }
 
     @Test
     @DisplayName("The public key used to verify an authentication token can be retrieved")
@@ -51,76 +69,67 @@ public class AuthTest {
     @Test
     @DisplayName("When an existing user tries to log in, they get a session token, and a verification code is mailed")
     public void testLogin() {
-        login(Identities.VALID_IDENTITY.getEmail())
+        pendingVerifications = new CountDownLatch(1);
+
+        callLogin(Identities.VALID_IDENTITY.getEmail())
             .then().statusCode(200);
 
-        Mockito.verify(authMailService)
-            .sendVerificationMail(
-                ArgumentMatchers.eq(Identities.VALID_IDENTITY.getEmail()),
-                ArgumentMatchers.any(),
-                ArgumentMatchers.eq(null)
-            );
+        verifyMails(1);
     }
 
     @Test
     @DisplayName("A valid callback can be provided")
     public void testLoginWithValidCallback() {
-        login(Identities.VALID_IDENTITY.getEmail(), "https://example.com/login/verify")
+        pendingVerifications = new CountDownLatch(1);
+
+        callLogin(Identities.VALID_IDENTITY.getEmail(), "https://example.com/login/verify")
             .then().statusCode(200);
 
-        Mockito.verify(authMailService)
-            .sendVerificationMail(
-                ArgumentMatchers.eq(Identities.VALID_IDENTITY.getEmail()),
-                ArgumentMatchers.any(),
-                ArgumentMatchers.eq(URI.create("https://example.com/login/verify"))
-            );
+        List<Mail> mails = verifyMails(1);
+
+        Mail mail = mails.get(0);
+        assertThat(mail.getHtml(), containsString("https://example.com/login/verify"));
     }
 
     @Test
     @DisplayName("An error is returned when a malformed callback is provided")
     public void testLoginWithMalformedCallback() {
-        login(Identities.VALID_IDENTITY.getEmail(), "malformed-uri")
+        callLogin(Identities.VALID_IDENTITY.getEmail(), "malformed-uri")
             .then().statusCode(400);
     }
 
     @Test
     @DisplayName("An error is returned when a callback which is not allowed is provided")
     public void testLoginWithIllegalCallback() {
-        login(Identities.VALID_IDENTITY.getEmail(), "https://example.com/not-allowed/login")
+        callLogin(Identities.VALID_IDENTITY.getEmail(), "https://example.com/not-allowed/login")
             .then().statusCode(400);
     }
 
     @Test
     @DisplayName("When a non-existing user tries to log in, they get a session token, but no verification code is mailed")
     public void testLoginWithInvalidUser() {
-        login(Identities.INVALID_IDENTITY.getEmail())
+        pendingVerifications = new CountDownLatch(1);
+
+        callLogin(Identities.INVALID_IDENTITY.getEmail())
             .then().statusCode(200);
 
-        Mockito.verify(authMailService, Mockito.never())
-            .sendVerificationMail(
-                ArgumentMatchers.eq(Identities.INVALID_IDENTITY.getEmail()),
-                ArgumentMatchers.any(),
-                ArgumentMatchers.any()
-            );
+        verifyMails(0);
     }
 
     @Test
     @DisplayName("When a user verifies their log-in attempt they get a JWT")
     public void testVerifyLogin() throws Exception {
-        ArgumentCaptor<String> verificationCodeCaptor = ArgumentCaptor.forClass(String.class);
+        pendingVerifications = new CountDownLatch(1);
 
-        LoginResponse loginResponse = login(Identities.VALID_IDENTITY.getEmail())
+        LoginResponse loginResponse = callLogin(Identities.VALID_IDENTITY.getEmail())
             .then().statusCode(200)
             .extract().body().as(LoginResponse.class);
 
-        Mockito.verify(authMailService)
-            .sendVerificationMail(
-                ArgumentMatchers.eq(Identities.VALID_IDENTITY.getEmail()),
-                verificationCodeCaptor.capture(),
-                ArgumentMatchers.any()
-            );
+        List<Mail> mails = verifyMails(1);
 
-        VerificationResponse verificationResponse = verify(loginResponse, verificationCodeCaptor.getValue())
+        String verificationCode = extractVerificationCode(mails.get(0));
+
+        VerificationResponse verificationResponse = callVerify(loginResponse, verificationCode)
             .then().statusCode(200)
             .extract().body().as(VerificationResponse.class);
 
@@ -131,7 +140,7 @@ public class AuthTest {
     @Test
     @DisplayName("When a user tries to verify their log-in with an invalid or expired session they get an error response")
     public void testVerifyLoginInvalid() {
-        verify("invalid session token", "invalid verification code")
+        callVerify("invalid session token", "invalid verification code")
             .then().statusCode(401);
     }
 
@@ -139,33 +148,33 @@ public class AuthTest {
     @DisplayName("Authenticated users can view their profile")
     public void testMeAuthenticated() {
         String jwt = jwtService.issueAuthToken(Identities.VALID_IDENTITY);
-        me(jwt).then().statusCode(200);
+        callMe(jwt).then().statusCode(200);
     }
 
     @Test
     @DisplayName("Unauthenticated users cannot view their profile")
     public void testMeUnauthenticated() {
-        me().then().statusCode(401);
+        callMe().then().statusCode(401);
     }
 
-    private Response me() {
+    private Response callMe() {
         return given().when().get("/auth/me");
     }
 
-    private Response me(String jwt) {
+    private Response callMe(String jwt) {
         return given()
             .header("Authorization", "Bearer %s".formatted(jwt))
             .when().get("/auth/me");
     }
 
-    private Response login(String email) {
+    private Response callLogin(String email) {
         return given()
             .header("Content-Type", "application/x-www-form-urlencoded")
             .formParam("email", email)
             .when().post("/auth/login");
     }
 
-    private Response login(String email, String callback) {
+    private Response callLogin(String email, String callback) {
         return given()
             .header("Content-Type", "application/x-www-form-urlencoded")
             .formParam("email", email)
@@ -173,18 +182,31 @@ public class AuthTest {
             .when().post("/auth/login");
     }
 
-    private Response verify(LoginResponse loginResponse, String verificationCode) {
+    private Response callVerify(LoginResponse loginResponse, String verificationCode) {
         String sessionToken = loginResponse.sessionToken();
 
-        return verify(sessionToken, verificationCode);
+        return callVerify(sessionToken, verificationCode);
     }
 
-    private Response verify(String sessionToken, String verificationCode) {
+    private Response callVerify(String sessionToken, String verificationCode) {
         return given()
             .header("Content-Type", "application/x-www-form-urlencoded")
             .formParam("session-token", sessionToken)
             .formParam("verification-code", verificationCode)
             .when().post("/auth/login/verify");
+    }
+
+    private List<Mail> verifyMails(int expected) {
+        try {
+            pendingVerifications.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<Mail> mails = mailbox.getMailsSentTo(Identities.VALID_IDENTITY.getEmail());
+        assertThat(mails, hasSize(expected));
+
+        return mails;
     }
 
 }

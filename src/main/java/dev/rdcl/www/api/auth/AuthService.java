@@ -6,8 +6,13 @@ import dev.rdcl.www.api.auth.entities.LoginAttempt;
 import dev.rdcl.www.api.auth.errors.InvalidCallback;
 import dev.rdcl.www.api.auth.errors.LoginAttemptNotFound;
 import dev.rdcl.www.api.auth.errors.UserNotFound;
+import dev.rdcl.www.api.auth.events.InitiateLoginAttemptCompleteEvent;
+import dev.rdcl.www.api.auth.events.InitiateLoginAttemptEvent;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.event.ObservesAsync;
+import jakarta.enterprise.event.Reception;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
@@ -18,6 +23,7 @@ import java.net.URI;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.concurrent.CompletionStage;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -28,6 +34,10 @@ public class AuthService {
     private final EntityManager em;
 
     private final AuthMailService authMailService;
+
+    private final Event<InitiateLoginAttemptEvent> initiateLoginAttemptEvent;
+
+    private final Event<InitiateLoginAttemptCompleteEvent> initiateLoginAttemptCompleteEvent;
 
     public Identity getUser(UUID id) {
         try {
@@ -40,21 +50,33 @@ public class AuthService {
         }
     }
 
-    @Transactional
     public String initiateLogin(String email, URI callback) {
         validateCallback(callback);
 
-        String sessionToken = generateSessionToken();
+        String sessionToken = generateToken(authProperties.sessionTokenLength());
 
+        initiateLoginAttemptEvent.fireAsync(new InitiateLoginAttemptEvent(
+            email,
+            callback,
+            sessionToken
+        ));
+
+        return sessionToken;
+    }
+
+    @Transactional
+    public CompletionStage<InitiateLoginAttemptCompleteEvent> consume(
+        @ObservesAsync(notifyObserver = Reception.IF_EXISTS) InitiateLoginAttemptEvent event
+    ) {
         try {
             Identity identity = em
                 .createNamedQuery("Identity.findByEmail", Identity.class)
-                .setParameter("email", email)
+                .setParameter("email", event.email())
                 .getSingleResult();
 
             LoginAttempt loginAttempt = LoginAttempt.builder()
-                .sessionToken(sessionToken)
-                .verificationCode(generateVerificationCode())
+                .sessionToken(event.sessionToken())
+                .verificationCode(generateToken(authProperties.verificationCodeLength()))
                 .identity(identity)
                 .build();
 
@@ -62,15 +84,16 @@ public class AuthService {
             em.flush();
 
             authMailService.sendVerificationMail(
-                identity.getEmail(),
+                event.email(),
                 loginAttempt.getVerificationCode(),
-                callback
+                event.callback()
             );
-        } catch (NoResultException e) {
-            // If the user does not exist, return a session token anyway.
-        }
 
-        return sessionToken;
+            return initiateLoginAttemptCompleteEvent.fireAsync(InitiateLoginAttemptCompleteEvent.initiated());
+        } catch (NoResultException e) {
+            // ignore this login
+            return initiateLoginAttemptCompleteEvent.fireAsync(InitiateLoginAttemptCompleteEvent.aborted());
+        }
     }
 
     @Transactional
@@ -114,22 +137,11 @@ public class AuthService {
         }
     }
 
-    private String generateSessionToken() {
+    private String generateToken(int length) {
         SecureRandom random = new SecureRandom();
-        byte[] sessionToken = new byte[authProperties.sessionTokenLength()];
-        random.nextBytes(sessionToken);
-        return encode(sessionToken);
-    }
-
-    private String generateVerificationCode() {
-        SecureRandom random = new SecureRandom();
-        byte[] verificationCode = new byte[authProperties.verificationCodeLength()];
-        random.nextBytes(verificationCode);
-        return encode(verificationCode);
-    }
-
-    private static String encode(byte[] bytes) {
-        return Base64.encodeBase64URLSafeString(bytes);
+        byte[] token = new byte[length];
+        random.nextBytes(token);
+        return Base64.encodeBase64URLSafeString(token);
     }
 
 }
