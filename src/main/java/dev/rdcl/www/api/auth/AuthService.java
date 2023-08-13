@@ -24,6 +24,7 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -48,6 +49,15 @@ public class AuthService {
         } catch (NoResultException e) {
             throw new UserNotFound(e);
         }
+    }
+
+    @Transactional
+    public Identity updateUser(UUID id, Consumer<Identity> updater) {
+        Identity identity = getUser(id);
+        updater.accept(identity);
+        em.persist(identity);
+        em.flush();
+        return identity;
     }
 
     public String initiateLogin(String email, URI callback) {

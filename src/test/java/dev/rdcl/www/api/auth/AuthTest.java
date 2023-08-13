@@ -152,6 +152,32 @@ public class AuthTest {
     }
 
     @Test
+    @DisplayName("Authenticated users can update their profile")
+    public void testPatchMeAuthenticated() {
+        String jwt = jwtService.issueAuthToken(Identities.VALID_IDENTITY);
+
+        callMe(jwt)
+            .then()
+            .statusCode(200)
+            .body("name", is(Identities.VALID_IDENTITY.getName()));
+
+        callPatchMe(jwt, "New Name")
+            .then()
+            .statusCode(200)
+            .body("name", is("New Name"));
+
+        callMe(jwt)
+            .then()
+            .statusCode(200)
+            .body("name", is("New Name"));
+
+        callPatchMe(jwt, Identities.VALID_IDENTITY.getName())
+            .then()
+            .statusCode(200)
+            .body("name", is(Identities.VALID_IDENTITY.getName()));
+    }
+
+    @Test
     @DisplayName("Unauthenticated users cannot view their profile")
     public void testMeUnauthenticated() {
         callMe().then().statusCode(401);
@@ -165,6 +191,13 @@ public class AuthTest {
         return given()
             .header("Authorization", "Bearer %s".formatted(jwt))
             .when().get("/auth/me");
+    }
+
+    private Response callPatchMe(String jwt, String name) {
+        return given()
+            .header("Authorization", "Bearer %s".formatted(jwt))
+            .formParam("name", name)
+            .when().patch("/auth/me");
     }
 
     private Response callLogin(String email) {

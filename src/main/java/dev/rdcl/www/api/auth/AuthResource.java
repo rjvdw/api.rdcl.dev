@@ -15,6 +15,7 @@ import jakarta.validation.constraints.Size;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -61,6 +62,27 @@ public class AuthResource {
     public IdentityResponse me(@Context SecurityContext ctx) {
         UUID id = jwtService.verifyAuthToken(jwt, ctx);
         Identity identity = authService.getUser(id);
+
+        return IdentityResponse.from(identity);
+    }
+
+    @PATCH
+    @Path("/me")
+    @RolesAllowed("user")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public IdentityResponse updateProfile(
+        @Context SecurityContext ctx,
+
+        @FormParam("name")
+        @Valid
+        @Size(max = 255)
+        String name
+    ) {
+        UUID id = jwtService.verifyAuthToken(jwt, ctx);
+        Identity identity = authService.updateUser(id, entity -> {
+            if (name != null) entity.setName(name);
+        });
 
         return IdentityResponse.from(identity);
     }
