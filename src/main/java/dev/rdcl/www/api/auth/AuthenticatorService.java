@@ -1,20 +1,27 @@
 package dev.rdcl.www.api.auth;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.yubico.webauthn.AssertionRequest;
+import com.yubico.webauthn.AssertionResult;
+import com.yubico.webauthn.FinishAssertionOptions;
 import com.yubico.webauthn.FinishRegistrationOptions;
 import com.yubico.webauthn.RegistrationResult;
+import com.yubico.webauthn.StartAssertionOptions;
 import com.yubico.webauthn.StartRegistrationOptions;
+import com.yubico.webauthn.data.AuthenticatorAssertionResponse;
 import com.yubico.webauthn.data.AuthenticatorAttestationResponse;
 import com.yubico.webauthn.data.AuthenticatorSelectionCriteria;
+import com.yubico.webauthn.data.ClientAssertionExtensionOutputs;
 import com.yubico.webauthn.data.ClientRegistrationExtensionOutputs;
 import com.yubico.webauthn.data.PublicKeyCredential;
 import com.yubico.webauthn.data.PublicKeyCredentialCreationOptions;
 import com.yubico.webauthn.data.ResidentKeyRequirement;
 import com.yubico.webauthn.data.UserVerificationRequirement;
+import com.yubico.webauthn.exception.AssertionFailedException;
 import com.yubico.webauthn.exception.RegistrationFailedException;
-import dev.rdcl.www.api.auth.dto.RegisterResult;
+import dev.rdcl.www.api.auth.dto.AuthenticatorAssertionResult;
 import dev.rdcl.www.api.auth.entities.Authenticator;
-import dev.rdcl.www.api.auth.entities.AuthenticatorRegistration;
+import dev.rdcl.www.api.auth.entities.AuthenticatorAssertion;
 import dev.rdcl.www.api.auth.entities.Identity;
 import dev.rdcl.www.api.auth.errors.AuthenticatorNotFound;
 import dev.rdcl.www.api.auth.errors.InvalidCredential;
@@ -27,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -43,7 +51,7 @@ public class AuthenticatorService {
     private final RelyingPartyService relyingPartyService;
 
     public Authenticator getAuthenticator(UUID owner, UUID authenticatorId) {
-        Identity identity = authService.getUser(owner);
+        authService.getUser(owner);
 
         try {
             return em
@@ -56,8 +64,78 @@ public class AuthenticatorService {
         }
     }
 
+    public List<Authenticator> getAuthenticators(String email) {
+        return em
+            .createNamedQuery("Authenticator.findByEmail", Authenticator.class)
+            .setParameter("email", email)
+            .getResultList();
+    }
+
     @Transactional
-    public RegisterResult register(UUID owner) throws JsonProcessingException {
+    public AuthenticatorAssertionResult initiateLogin(String email) throws JsonProcessingException {
+        Duration timeout = Duration.ofSeconds(authProperties.authenticatorTimeoutSeconds());
+
+        AssertionRequest options = relyingPartyService
+            .getRelyingParty()
+            .startAssertion(
+                StartAssertionOptions.builder()
+                    .username(email)
+                    .build()
+            );
+
+        String optionsString = options.toCredentialsGetJson();
+
+        AuthenticatorAssertion assertion = AuthenticatorAssertion.builder()
+            .owner(authService.getUser(email))
+            .options(options.toJson())
+            .timeout(timeout.getSeconds())
+            .build();
+
+        em.persist(assertion);
+        em.flush();
+
+        return new AuthenticatorAssertionResult(assertion.getId(), optionsString);
+    }
+
+    @Transactional
+    public String completeLogin(UUID assertionId, String credentialJson) throws JsonProcessingException {
+        AuthenticatorAssertion assertion = em
+            .createNamedQuery("AuthenticatorAssertion.findById", AuthenticatorAssertion.class)
+            .setParameter("id", assertionId)
+            .getResultStream()
+            .findAny()
+            .orElseThrow(() -> new InvalidCredential("No active login"));
+
+        AssertionRequest request = AssertionRequest.fromJson(assertion.getOptions());
+
+        PublicKeyCredential<AuthenticatorAssertionResponse, ClientAssertionExtensionOutputs> response;
+        try {
+            response = PublicKeyCredential.parseAssertionResponseJson(credentialJson);
+        } catch (IOException e) {
+            throw new InvalidCredential(e.getMessage(), e);
+        }
+
+        AssertionResult result;
+        try {
+            result = relyingPartyService.getRelyingParty()
+                .finishAssertion(
+                    FinishAssertionOptions.builder()
+                        .request(request)
+                        .response(response)
+                        .build()
+                );
+        } catch (AssertionFailedException e) {
+            throw new InvalidCredential(e.getMessage(), e);
+        }
+
+        em.remove(assertion);
+        em.flush();
+
+        return result.getUsername();
+    }
+
+    @Transactional
+    public AuthenticatorAssertionResult register(UUID owner) throws JsonProcessingException {
         Identity identity = authService.getUser(owner);
 
         Duration timeout = Duration.ofSeconds(authProperties.authenticatorTimeoutSeconds());
@@ -77,20 +155,20 @@ public class AuthenticatorService {
 
         String optionsString = options.toCredentialsCreateJson();
 
-        AuthenticatorRegistration registration = AuthenticatorRegistration.builder()
+        AuthenticatorAssertion assertion = AuthenticatorAssertion.builder()
             .owner(identity)
             .options(options.toJson())
             .timeout(timeout.getSeconds())
             .build();
 
-        em.persist(registration);
+        em.persist(assertion);
         em.flush();
 
-        return new RegisterResult(registration.getId(), optionsString);
+        return new AuthenticatorAssertionResult(assertion.getId(), optionsString);
     }
 
     @Transactional
-    public void completeRegistration(UUID owner, UUID registrationId, String credentialJson) throws JsonProcessingException {
+    public void completeRegistration(UUID owner, UUID assertionId, String credentialJson) throws JsonProcessingException {
         Identity identity = authService.getUser(owner);
 
         PublicKeyCredential<AuthenticatorAttestationResponse, ClientRegistrationExtensionOutputs> response;
@@ -100,9 +178,9 @@ public class AuthenticatorService {
             throw new InvalidCredential(e.getMessage(), e);
         }
 
-        AuthenticatorRegistration registration = em
-            .createNamedQuery("AuthenticatorRegistration.findByIdAndOwner", AuthenticatorRegistration.class)
-            .setParameter("id", registrationId)
+        AuthenticatorAssertion registration = em
+            .createNamedQuery("AuthenticatorAssertion.findByIdAndOwner", AuthenticatorAssertion.class)
+            .setParameter("id", assertionId)
             .setParameter("owner", owner)
             .getResultStream()
             .findAny()
@@ -166,7 +244,7 @@ public class AuthenticatorService {
     public void cleanUpOldAuthenticatorRegistrations() {
         em.createNativeQuery("""
                 delete
-                from auth_authenticator_registration as r
+                from auth_authenticator_assertion as r
                 where r.created + r.timeout * interval '1 second' < now()
                 """)
             .executeUpdate();

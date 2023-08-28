@@ -1,15 +1,14 @@
 package dev.rdcl.www.api.auth;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import dev.rdcl.www.api.auth.dto.AuthenticatorAssertionResult;
 import dev.rdcl.www.api.auth.dto.AuthenticatorResponse;
-import dev.rdcl.www.api.auth.dto.RegisterResult;
 import dev.rdcl.www.api.auth.entities.Authenticator;
 import dev.rdcl.www.api.auth.errors.CredentialJsonException;
 import dev.rdcl.www.api.jwt.JwtService;
 import dev.rdcl.www.api.restconfig.validators.Json;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -47,7 +46,7 @@ public class AuthenticatorResource {
     ) {
         UUID owner = jwtService.verifyAuthToken(jwt, ctx);
         try {
-            RegisterResult result = authenticatorService.register(owner);
+            AuthenticatorAssertionResult result = authenticatorService.register(owner);
             return Response
                 .ok()
                 .header("Access-Control-Expose-Headers", "Location")
@@ -65,12 +64,12 @@ public class AuthenticatorResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public void completeRegistration(
         @Context SecurityContext ctx,
-        @PathParam("id") UUID registrationId,
+        @PathParam("id") UUID assertionId,
         @Valid @Json String credentialJson
     ) {
         UUID owner = jwtService.verifyAuthToken(jwt, ctx);
         try {
-            authenticatorService.completeRegistration(owner, registrationId, credentialJson);
+            authenticatorService.completeRegistration(owner, assertionId, credentialJson);
         } catch (JsonProcessingException e) {
             throw new CredentialJsonException(e);
         }

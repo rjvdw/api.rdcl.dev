@@ -1,6 +1,6 @@
 package dev.rdcl.www.api.auth;
 
-import dev.rdcl.www.api.auth.dto.LoginResponse;
+import dev.rdcl.www.api.auth.dto.InitiateLoginResult;
 import dev.rdcl.www.api.auth.dto.VerificationResponse;
 import dev.rdcl.www.api.auth.events.InitiateLoginAttemptCompleteEvent;
 import dev.rdcl.www.api.auth.fixtures.Identities;
@@ -121,9 +121,9 @@ public class AuthTest {
     public void testVerifyLogin() throws Exception {
         pendingVerifications = new CountDownLatch(1);
 
-        LoginResponse loginResponse = callLogin(Identities.VALID_IDENTITY.getEmail())
+        InitiateLoginResult loginResponse = callLogin(Identities.VALID_IDENTITY.getEmail())
             .then().statusCode(200)
-            .extract().body().as(LoginResponse.class);
+            .extract().body().as(InitiateLoginResult.class);
 
         List<Mail> mails = verifyMails(1);
 
@@ -215,8 +215,8 @@ public class AuthTest {
             .when().post("/auth/login");
     }
 
-    private Response callVerify(LoginResponse loginResponse, String verificationCode) {
-        String sessionToken = loginResponse.sessionToken();
+    private Response callVerify(InitiateLoginResult loginResponse, String verificationCode) {
+        String sessionToken = loginResponse.payload();
 
         return callVerify(sessionToken, verificationCode);
     }

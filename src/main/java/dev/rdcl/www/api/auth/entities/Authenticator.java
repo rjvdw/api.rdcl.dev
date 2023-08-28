@@ -31,6 +31,11 @@ import java.util.UUID;
         from Authenticator a
         where a.owner.id = :owner and a.id = :id
         """),
+    @NamedQuery(name = "Authenticator.findByEmail", query = """
+        select a
+        from Authenticator a
+        where a.owner.email = :email
+        """),
     @NamedQuery(name = "Authenticator.findByKeyId", query = """
         select a
         from Authenticator a

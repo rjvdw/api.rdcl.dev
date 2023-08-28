@@ -1,8 +1,14 @@
 package dev.rdcl.www.api.auth;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import dev.rdcl.www.api.auth.dto.AuthenticatorAssertionResult;
+import dev.rdcl.www.api.auth.dto.InitiateLoginResult;
+import dev.rdcl.www.api.auth.dto.LoginMode;
 import dev.rdcl.www.api.auth.entities.AllowedCallback;
+import dev.rdcl.www.api.auth.entities.Authenticator;
 import dev.rdcl.www.api.auth.entities.Identity;
 import dev.rdcl.www.api.auth.entities.LoginAttempt;
+import dev.rdcl.www.api.auth.errors.CredentialJsonException;
 import dev.rdcl.www.api.auth.errors.InvalidCallback;
 import dev.rdcl.www.api.auth.errors.LoginAttemptNotFound;
 import dev.rdcl.www.api.auth.errors.UserNotFound;
@@ -22,6 +28,7 @@ import org.apache.commons.codec.binary.Base64;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
@@ -33,6 +40,8 @@ public class AuthService {
     private final AuthProperties authProperties;
 
     private final EntityManager em;
+
+    private final AuthenticatorService authenticatorService;
 
     private final AuthMailService authMailService;
 
@@ -51,6 +60,17 @@ public class AuthService {
         }
     }
 
+    public Identity getUser(String email) {
+        try {
+            return em
+                .createNamedQuery("Identity.findByEmail", Identity.class)
+                .setParameter("email", email)
+                .getSingleResult();
+        } catch (NoResultException e) {
+            throw new UserNotFound(e);
+        }
+    }
+
     @Transactional
     public Identity updateUser(UUID id, Consumer<Identity> updater) {
         Identity identity = getUser(id);
@@ -60,18 +80,45 @@ public class AuthService {
         return identity;
     }
 
-    public String initiateLogin(String email, URI callback) {
+    @Transactional
+    public InitiateLoginResult initiateLogin(String email, URI callback, LoginMode mode) {
         validateCallback(callback);
 
-        String sessionToken = generateToken(authProperties.sessionTokenLength());
+        List<Authenticator> authenticators = authenticatorService.getAuthenticators(email);
 
-        initiateLoginAttemptEvent.fireAsync(new InitiateLoginAttemptEvent(
-            email,
-            callback,
-            sessionToken
-        ));
+        if (authenticators.isEmpty() || LoginMode.EMAIL.equals(mode)) {
+            String sessionToken = generateToken(authProperties.sessionTokenLength());
 
-        return sessionToken;
+            initiateLoginAttemptEvent.fireAsync(new InitiateLoginAttemptEvent(
+                email,
+                callback,
+                sessionToken
+            ));
+
+            return new InitiateLoginResult(
+                LoginMode.EMAIL,
+                sessionToken,
+                null
+            );
+        }
+
+        try {
+            AuthenticatorAssertionResult authenticatorAssertionResult = authenticatorService.initiateLogin(email);
+            return new InitiateLoginResult(
+                LoginMode.AUTHENTICATOR,
+                authenticatorAssertionResult.options(),
+                authenticatorAssertionResult.id()
+            );
+        } catch (JsonProcessingException e) {
+            throw new CredentialJsonException(e);
+        }
+    }
+
+    @Transactional
+    public Identity completeLogin(UUID assertionId, String credentialJson) throws JsonProcessingException {
+        String email = authenticatorService.completeLogin(assertionId, credentialJson);
+
+        return getUser(email);
     }
 
     @Transactional

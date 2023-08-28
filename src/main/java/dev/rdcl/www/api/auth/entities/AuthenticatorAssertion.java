@@ -25,16 +25,22 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "AuthenticatorRegistration")
-@Table(name = "auth_authenticator_registration")
+@Entity(name = "AuthenticatorAssertion")
+@Table(name = "auth_authenticator_assertion")
 @NamedQueries({
-    @NamedQuery(name = "AuthenticatorRegistration.findByIdAndOwner", query = """
-        select r
-        from AuthenticatorRegistration r
-        where r.id = :id and r.owner.id = :owner
+    @NamedQuery(name = "AuthenticatorAssertion.findById", query = """
+        select aa
+        from AuthenticatorAssertion aa
+        where aa.id = :id
+        """),
+
+    @NamedQuery(name = "AuthenticatorAssertion.findByIdAndOwner", query = """
+        select aa
+        from AuthenticatorAssertion aa
+        where aa.id = :id and aa.owner.id = :owner
         """),
 })
-public class AuthenticatorRegistration {
+public class AuthenticatorAssertion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
