@@ -10,7 +10,12 @@ public interface AuthProperties {
 
     int verificationCodeLength();
 
+    @WithDefault("120")
+        // 2 minutes
+    long authenticatorTimeoutSeconds();
+
     @WithDefault("360")
+        // 6 minutes
     int maxLoginAttemptDurationSeconds();
 
     String defaultLoginCallbackUrl();

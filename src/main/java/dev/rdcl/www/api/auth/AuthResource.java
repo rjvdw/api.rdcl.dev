@@ -138,4 +138,3 @@ public class AuthResource {
         return new VerificationResponse(authToken);
     }
 }
-

@@ -21,6 +21,7 @@
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
         <lombok.version>1.18.28</lombok.version>
+        <yubico-webauthn.version>2.5.0</yubico-webauthn.version>
     </properties>
 
     <dependencyManagement>
@@ -48,6 +49,12 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.yubico</groupId>
+            <artifactId>webauthn-server-core</artifactId>
+            <version>${yubico-webauthn.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
