@@ -92,7 +92,11 @@ public class AuthenticatorResource {
             entity.setName(name);
         });
 
-        return new AuthenticatorResponse(authenticator.getId(), authenticator.getName());
+        return new AuthenticatorResponse(
+            authenticator.getId(),
+            authenticator.getName(),
+            authenticator.getLastUsed()
+        );
     }
 
     @DELETE

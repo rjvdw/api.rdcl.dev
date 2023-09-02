@@ -17,6 +17,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -66,5 +67,8 @@ public class Authenticator {
 
     @Column(name = "signature_count", nullable = false)
     private Long signatureCount;
+
+    @Column(name = "last_used")
+    private Instant lastUsed;
 
 }

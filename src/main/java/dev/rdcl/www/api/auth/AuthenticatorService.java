@@ -34,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -128,6 +129,13 @@ public class AuthenticatorService {
             throw new InvalidCredential(e.getMessage(), e);
         }
 
+        Authenticator authenticator = em
+            .createNamedQuery("Authenticator.findByKeyId", Authenticator.class)
+            .setParameter("keyId", result.getCredential().getCredentialId().getBytes())
+            .getSingleResult();
+        authenticator.setLastUsed(Instant.now());
+
+        em.persist(authenticator);
         em.remove(assertion);
         em.flush();
 
