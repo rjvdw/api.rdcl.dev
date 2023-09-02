@@ -38,9 +38,9 @@ public class LabelTest {
     public void testEndpoints() {
         Map<String, String> labels = Map.of(
             "label1", "{}",
-            "label2", "{\"background-color\":\"#000\",\"color\":\"#fff\"}",
-            "label3", "{\"background-color\":\"red\"}",
-            "label4", "{\"background-color\":\"#f8f8f8\",\"color\":\"#000\"}"
+            "label2", "{\"prop\":\"val1\"}",
+            "label3", "{\"prop\":\"val2\"}",
+            "label4", "{\"prop\":\"val3\"}"
         );
 
         update(labels).then().statusCode(204);
@@ -51,13 +51,13 @@ public class LabelTest {
 
         assertThat(response.labels().keySet(), hasSize(4));
         assertThat(response.labels(), hasEntry("label1", "{}"));
-        assertThat(response.labels(), hasEntry("label2", "{\"background-color\":\"#000\",\"color\":\"#fff\"}"));
-        assertThat(response.labels(), hasEntry("label3", "{\"background-color\":\"red\"}"));
-        assertThat(response.labels(), hasEntry("label4", "{\"background-color\":\"#f8f8f8\",\"color\":\"#000\"}"));
+        assertThat(response.labels(), hasEntry("label2", "{\"prop\": \"val1\"}"));
+        assertThat(response.labels(), hasEntry("label3", "{\"prop\": \"val2\"}"));
+        assertThat(response.labels(), hasEntry("label4", "{\"prop\": \"val3\"}"));
 
         labels = Map.of(
-            "label3", "{\"background-color\":\"red\"}",
-            "label4", "{\"background-color\":\"#000\",\"color\":\"#fff\"}",
+            "label3", "{\"prop\":\"val10\"}",
+            "label4", "{\"prop\":\"val11\"}",
             "label5", "{}"
         );
 
@@ -68,8 +68,8 @@ public class LabelTest {
             .extract().as(ListLabelsResponse.class);
 
         assertThat(response.labels().keySet(), hasSize(3));
-        assertThat(response.labels(), hasEntry("label3", "{\"background-color\":\"red\"}"));
-        assertThat(response.labels(), hasEntry("label4", "{\"background-color\":\"#000\",\"color\":\"#fff\"}"));
+        assertThat(response.labels(), hasEntry("label3", "{\"prop\": \"val10\"}"));
+        assertThat(response.labels(), hasEntry("label4", "{\"prop\": \"val11\"}"));
         assertThat(response.labels(), hasEntry("label5", "{}"));
     }
 

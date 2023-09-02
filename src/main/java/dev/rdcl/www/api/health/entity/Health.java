@@ -18,6 +18,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 
@@ -101,7 +103,8 @@ public class Health {
     private Identity owner;
 
     @Json
-    @Column(name = "data", columnDefinition = "text")
+    @Column(name = "data", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String data;
 
 }

@@ -55,7 +55,7 @@ public class LabelResource {
             .stream()
             .map(entry -> Label.builder()
                 .text(entry.getKey())
-                .styles(entry.getValue())
+                .settings(entry.getValue())
                 .build())
             .toList();
 

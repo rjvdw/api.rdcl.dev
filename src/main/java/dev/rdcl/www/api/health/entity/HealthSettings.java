@@ -17,6 +17,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -47,6 +49,7 @@ public class HealthSettings {
     private Identity owner;
 
     @Json
-    @Column(name = "settings", columnDefinition = "text")
+    @Column(name = "settings", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String settings;
 }
