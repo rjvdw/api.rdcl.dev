@@ -1,7 +1,6 @@
 package dev.rdcl.www.api.auth.events;
 
-public sealed interface InitiateLoginAttemptCompleteEvent
-    permits LoginAttemptInitiatedEvent, LoginAttemptAbortedEvent {
+public sealed interface InitiateLoginAttemptCompleteEvent {
 
     boolean success();
 
@@ -12,18 +11,18 @@ public sealed interface InitiateLoginAttemptCompleteEvent
     static InitiateLoginAttemptCompleteEvent aborted() {
         return new LoginAttemptAbortedEvent();
     }
-}
 
-record LoginAttemptAbortedEvent() implements InitiateLoginAttemptCompleteEvent {
-    @Override
-    public boolean success() {
-        return false;
+    record LoginAttemptAbortedEvent() implements InitiateLoginAttemptCompleteEvent {
+        @Override
+        public boolean success() {
+            return false;
+        }
     }
-}
 
-record LoginAttemptInitiatedEvent() implements InitiateLoginAttemptCompleteEvent {
-    @Override
-    public boolean success() {
-        return true;
+    record LoginAttemptInitiatedEvent() implements InitiateLoginAttemptCompleteEvent {
+        @Override
+        public boolean success() {
+            return true;
+        }
     }
 }
