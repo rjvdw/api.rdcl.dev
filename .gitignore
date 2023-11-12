@@ -7,5 +7,5 @@
 /.env
 /flyway.conf
 
-/src/main/resources/private-key.pem
-/src/main/resources/public-key.pem
+/src/main/resources/jwt.key
+/src/main/resources/jwt.pem
