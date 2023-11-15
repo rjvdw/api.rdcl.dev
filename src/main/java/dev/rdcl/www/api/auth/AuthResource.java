@@ -79,12 +79,12 @@ public class AuthResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public IdentityResponse updateProfile(
-        @Context SecurityContext ctx,
+            @Context SecurityContext ctx,
 
-        @FormParam("name")
-        @Valid
-        @Size(max = 255)
-        String name
+            @FormParam("name")
+            @Valid
+            @Size(max = 255)
+            String name
     ) {
         UUID id = jwtService.verifyAuthToken(jwt, ctx);
         Identity identity = authService.updateUser(id, entity -> {
@@ -100,20 +100,20 @@ public class AuthResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(
-        @FormParam("email")
-        @Valid
-        @NotNull
-        @Email
-        String email,
+            @FormParam("email")
+            @Valid
+            @NotNull
+            @Email
+            String email,
 
-        @FormParam("callback")
-        @Valid
-        @URL
-        String callback,
+            @FormParam("callback")
+            @Valid
+            @URL
+            String callback,
 
-        @FormParam("mode")
-        @Valid
-        LoginMode mode
+            @FormParam("mode")
+            @Valid
+            LoginMode mode
     ) {
         try {
             URI uri = callback == null ? null : new java.net.URL(callback).toURI();
@@ -122,14 +122,14 @@ public class AuthResource {
             Response.ResponseBuilder response = Response.ok();
             if (result.assertionId() != null) {
                 response = response
-                    .header("Access-Control-Expose-Headers", "Location")
-                    .header("Location", "/auth/login/%s/complete".formatted(
-                        result.assertionId()
-                    ));
+                        .header("Access-Control-Expose-Headers", "Location")
+                        .header("Location", "/auth/login/%s/complete".formatted(
+                                result.assertionId()
+                        ));
             }
 
             return response.entity(
-                new LoginResponse(result.mode(), result.payload())
+                    new LoginResponse(result.mode(), result.payload())
             ).build();
         } catch (MalformedURLException | URISyntaxException ex) {
             throw new InvalidCallback(callback, ex);
@@ -142,17 +142,17 @@ public class AuthResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public VerificationResponse verify(
-        @FormParam("session-token")
-        @Valid
-        @NotNull
-        @Size(min = 10, max = 511)
-        String sessionToken,
+            @FormParam("session-token")
+            @Valid
+            @NotNull
+            @Size(min = 10, max = 511)
+            String sessionToken,
 
-        @FormParam("verification-code")
-        @Valid
-        @NotNull
-        @Size(min = 10, max = 511)
-        String verificationCode
+            @FormParam("verification-code")
+            @Valid
+            @NotNull
+            @Size(min = 10, max = 511)
+            String verificationCode
     ) {
         Identity identity = authService.verifyLogin(sessionToken, verificationCode);
         String authToken = jwtService.issueAuthToken(identity);
@@ -165,8 +165,8 @@ public class AuthResource {
     @PermitAll
     @Consumes(MediaType.APPLICATION_JSON)
     public VerificationResponse complete(
-        @PathParam("id") UUID assertionId,
-        @Valid @Json String credentialJson
+            @PathParam("id") UUID assertionId,
+            @Valid @Json String credentialJson
     ) {
         try {
             Identity identity = authService.completeLogin(assertionId, credentialJson);

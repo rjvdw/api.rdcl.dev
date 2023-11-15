@@ -42,17 +42,17 @@ public class AuthenticatorResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     public Response register(
-        @Context SecurityContext ctx
+            @Context SecurityContext ctx
     ) {
         UUID owner = jwtService.verifyAuthToken(jwt, ctx);
         try {
             AuthenticatorAssertionResult result = authenticatorService.register(owner);
             return Response
-                .ok()
-                .header("Access-Control-Expose-Headers", "Location")
-                .header("Location", "/auth/authenticator/%s/complete-registration".formatted(result.id()))
-                .entity(result.options())
-                .build();
+                    .ok()
+                    .header("Access-Control-Expose-Headers", "Location")
+                    .header("Location", "/auth/authenticator/%s/complete-registration".formatted(result.id()))
+                    .entity(result.options())
+                    .build();
         } catch (JsonProcessingException e) {
             throw new CredentialJsonException(e);
         }
@@ -63,9 +63,9 @@ public class AuthenticatorResource {
     @RolesAllowed("user")
     @Consumes(MediaType.APPLICATION_JSON)
     public void completeRegistration(
-        @Context SecurityContext ctx,
-        @PathParam("id") UUID assertionId,
-        @Valid @Json String credentialJson
+            @Context SecurityContext ctx,
+            @PathParam("id") UUID assertionId,
+            @Valid @Json String credentialJson
     ) {
         UUID owner = jwtService.verifyAuthToken(jwt, ctx);
         try {
@@ -79,13 +79,13 @@ public class AuthenticatorResource {
     @Path("/{id}")
     @RolesAllowed("user")
     @Consumes({
-        MediaType.APPLICATION_FORM_URLENCODED,
-        MediaType.MULTIPART_FORM_DATA,
+            MediaType.APPLICATION_FORM_URLENCODED,
+            MediaType.MULTIPART_FORM_DATA,
     })
     public AuthenticatorResponse update(
-        @Context SecurityContext ctx,
-        @PathParam("id") UUID id,
-        @Valid @FormParam("name") @Size(max = 255) String name
+            @Context SecurityContext ctx,
+            @PathParam("id") UUID id,
+            @Valid @FormParam("name") @Size(max = 255) String name
     ) {
         UUID owner = jwtService.verifyAuthToken(jwt, ctx);
         Authenticator authenticator = authenticatorService.update(owner, id, entity -> {
@@ -93,9 +93,9 @@ public class AuthenticatorResource {
         });
 
         return new AuthenticatorResponse(
-            authenticator.getId(),
-            authenticator.getName(),
-            authenticator.getLastUsed()
+                authenticator.getId(),
+                authenticator.getName(),
+                authenticator.getLastUsed()
         );
     }
 
@@ -103,8 +103,8 @@ public class AuthenticatorResource {
     @Path("/{id}")
     @RolesAllowed("user")
     public void remove(
-        @Context SecurityContext ctx,
-        @PathParam("id") UUID id
+            @Context SecurityContext ctx,
+            @PathParam("id") UUID id
     ) {
         UUID owner = jwtService.verifyAuthToken(jwt, ctx);
         authenticatorService.remove(owner, id);

@@ -40,27 +40,27 @@ public class JwtService {
      */
     public String issueAuthToken(Identity identity) {
         return Jwt
-            .issuer(jwtProperties.issuer())
-            .subject(identity.getId().toString())
-            .upn(identity.getEmail())
-            .groups(Set.of("user"))
-            .preferredUserName(identity.getName())
-            .issuedAt(Instant.now())
-            .expiresIn(jwtProperties.authTokenExpiry())
-            .sign();
+                .issuer(jwtProperties.issuer())
+                .subject(identity.getId().toString())
+                .upn(identity.getEmail())
+                .groups(Set.of("user"))
+                .preferredUserName(identity.getName())
+                .issuedAt(Instant.now())
+                .expiresIn(jwtProperties.authTokenExpiry())
+                .sign();
     }
 
     public Optional<UUID> verifyAuthTokenOptional(JsonWebToken jwt, SecurityContext ctx) {
         return Optional.ofNullable(ctx.getUserPrincipal())
-            .filter(principal -> principal.getName().equals(jwt.getName()))
-            .map(principal -> jwt)
-            .map(JsonWebToken::getSubject)
-            .map(UUID::fromString);
+                .filter(principal -> principal.getName().equals(jwt.getName()))
+                .map(principal -> jwt)
+                .map(JsonWebToken::getSubject)
+                .map(UUID::fromString);
     }
 
     public UUID verifyAuthToken(JsonWebToken jwt, SecurityContext ctx) {
         return verifyAuthTokenOptional(jwt, ctx)
-            .orElseThrow(() -> new WebApplicationException(Response.Status.UNAUTHORIZED));
+                .orElseThrow(() -> new WebApplicationException(Response.Status.UNAUTHORIZED));
     }
 
 }

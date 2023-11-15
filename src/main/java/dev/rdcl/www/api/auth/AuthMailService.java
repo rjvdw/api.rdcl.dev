@@ -27,18 +27,18 @@ public class AuthMailService {
         mail.setSubject("Login request");
         mail.setText("Go to %s to verify your login attempt.".formatted(loginLink));
         mail.setHtml("""
-            <p>
-                <a href="%s">Click here to verify your login attempt.</a>
-            </p>
-            """.formatted(loginLink));
+                <p>
+                    <a href="%s">Click here to verify your login attempt.</a>
+                </p>
+                """.formatted(loginLink));
 
         mailer.send(mail);
     }
 
     private URI buildLoginLink(URI baseUri, String verificationCode) {
         return UriBuilder.fromUri(baseUri == null ? defaultCallback() : baseUri)
-            .queryParam("verification-code", verificationCode)
-            .build();
+                .queryParam("verification-code", verificationCode)
+                .build();
     }
 
     private URI defaultCallback() {

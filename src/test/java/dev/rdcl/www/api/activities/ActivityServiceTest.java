@@ -93,9 +93,9 @@ public class ActivityServiceTest {
 
     private Identity createIdentity() {
         Identity identity = Identity.builder()
-            .name("Test user with activities")
-            .email("test.activities@example.com")
-            .build();
+                .name("Test user with activities")
+                .email("test.activities@example.com")
+                .build();
 
         em.persist(identity);
 
@@ -111,19 +111,19 @@ public class ActivityServiceTest {
         ZonedDateTime endsFuture = ZonedDateTime.parse("2002-01-01T14:00:00Z");
 
         return List.of(
-            createActivity(owner, "past activity without an end date-time", startsPast, false),
-            createActivity(owner, "past all-day activity without an end date", startsPast, true),
-            createActivity(owner, "past activity with an end date-time", startsPast, endsPast, false),
-            createActivity(owner, "past all-day activity with an end date", startsPast, endsPast, true),
+                createActivity(owner, "past activity without an end date-time", startsPast, false),
+                createActivity(owner, "past all-day activity without an end date", startsPast, true),
+                createActivity(owner, "past activity with an end date-time", startsPast, endsPast, false),
+                createActivity(owner, "past all-day activity with an end date", startsPast, endsPast, true),
 
-            createActivity(owner, "all-day activity without an end date that is in progress", startsPresent, true),
-            createActivity(owner, "all-day activity with an end date that is in progress", startsPresent, endsPresent, true),
-            createActivity(owner, "activity with an end date-time that is in progress", startsPresent, endsPresent, false),
+                createActivity(owner, "all-day activity without an end date that is in progress", startsPresent, true),
+                createActivity(owner, "all-day activity with an end date that is in progress", startsPresent, endsPresent, true),
+                createActivity(owner, "activity with an end date-time that is in progress", startsPresent, endsPresent, false),
 
-            createActivity(owner, "upcoming activity without an end date-time", startsFuture, false),
-            createActivity(owner, "upcoming all-day activity without an end date", startsFuture, true),
-            createActivity(owner, "upcoming activity with an end date-time", startsFuture, endsFuture, false),
-            createActivity(owner, "upcoming activity with an end date-time", startsFuture, endsFuture, true)
+                createActivity(owner, "upcoming activity without an end date-time", startsFuture, false),
+                createActivity(owner, "upcoming all-day activity without an end date", startsFuture, true),
+                createActivity(owner, "upcoming activity with an end date-time", startsFuture, endsFuture, false),
+                createActivity(owner, "upcoming activity with an end date-time", startsFuture, endsFuture, true)
         );
     }
 
@@ -133,12 +133,12 @@ public class ActivityServiceTest {
 
     private Activity createActivity(Identity owner, String title, ZonedDateTime starts, ZonedDateTime ends, boolean allDay) {
         Activity activity = Activity.builder()
-            .owner(owner)
-            .title(title)
-            .location("Test location")
-            .timezone(starts.getZone().toString())
-            .allDay(allDay)
-            .build();
+                .owner(owner)
+                .title(title)
+                .location("Test location")
+                .timezone(starts.getZone().toString())
+                .allDay(allDay)
+                .build();
 
         activity.setStartsFromZoned(starts);
         activity.setEndsFromZoned(ends);

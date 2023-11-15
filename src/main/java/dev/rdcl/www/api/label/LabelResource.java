@@ -47,17 +47,17 @@ public class LabelResource {
     @RolesAllowed("user")
     @Consumes(MediaType.APPLICATION_JSON)
     public void update(
-        @Valid Map<@NotNull @Size(max = 31) String, @NotNull @Json String> labelConfigs,
-        @Context SecurityContext ctx
+            @Valid Map<@NotNull @Size(max = 31) String, @NotNull @Json String> labelConfigs,
+            @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         List<Label> labels = labelConfigs.entrySet()
-            .stream()
-            .map(entry -> Label.builder()
-                .text(entry.getKey())
-                .settings(entry.getValue())
-                .build())
-            .toList();
+                .stream()
+                .map(entry -> Label.builder()
+                        .text(entry.getKey())
+                        .settings(entry.getValue())
+                        .build())
+                .toList();
 
         labelService.update(ownerId, labels);
     }

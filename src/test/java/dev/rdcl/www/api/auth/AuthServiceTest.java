@@ -38,9 +38,9 @@ public class AuthServiceTest {
     @DisplayName("Login attempts can be verified")
     public void testVerifyLogin() {
         Identity identity = Identity.builder()
-            .name("Test Subject")
-            .email("test.subject@example.com")
-            .build();
+                .name("Test Subject")
+                .email("test.subject@example.com")
+                .build();
         em.persist(identity);
 
         LoginAttempt loginAttempt = createLoginAttempt(identity, pastInstant(maxDuration() - 10));
@@ -56,9 +56,9 @@ public class AuthServiceTest {
     @DisplayName("Login attempts that are expired are ignored")
     public void testVerifyExpiredLogin() {
         Identity identity = Identity.builder()
-            .name("Test Subject")
-            .email("test.subject@example.com")
-            .build();
+                .name("Test Subject")
+                .email("test.subject@example.com")
+                .build();
         em.persist(identity);
 
         LoginAttempt loginAttempt = createLoginAttempt(identity, pastInstant(maxDuration() + 10));
@@ -73,9 +73,9 @@ public class AuthServiceTest {
     @DisplayName("Old login attempts are removed while recent login attempts are kept intact")
     public void testCleanUpOldLoginAttempts() {
         Identity identity = Identity.builder()
-            .name("Test Subject")
-            .email("test.subject@example.com")
-            .build();
+                .name("Test Subject")
+                .email("test.subject@example.com")
+                .build();
 
         em.persist(identity);
 
@@ -91,13 +91,13 @@ public class AuthServiceTest {
         authService.cleanUpOldLoginAttempts();
 
         List<LoginAttempt> loginAttempts = em
-            .createQuery("""
-                select l
-                from LoginAttempt l
-                where l.identity = :identity
-                """, LoginAttempt.class)
-            .setParameter("identity", identity)
-            .getResultList();
+                .createQuery("""
+                        select l
+                        from LoginAttempt l
+                        where l.identity = :identity
+                        """, LoginAttempt.class)
+                .setParameter("identity", identity)
+                .getResultList();
 
         assertThat(loginAttempts, hasSize(2));
         for (LoginAttempt la : loginAttempts) {
@@ -116,22 +116,22 @@ public class AuthServiceTest {
 
     private LoginAttempt createLoginAttempt(Identity identity, Instant created) {
         LoginAttempt loginAttempt = LoginAttempt.builder()
-            .sessionToken(UUID.randomUUID().toString())
-            .verificationCode(UUID.randomUUID().toString())
-            .identity(identity)
-            .build();
+                .sessionToken(UUID.randomUUID().toString())
+                .verificationCode(UUID.randomUUID().toString())
+                .identity(identity)
+                .build();
 
         em.persist(loginAttempt);
 
         // override the creation timestamp
         em.createQuery("""
-                update LoginAttempt l
-                set l.created = :created
-                where l = :loginAttempt
-                """)
-            .setParameter("created", created)
-            .setParameter("loginAttempt", loginAttempt)
-            .executeUpdate();
+                        update LoginAttempt l
+                        set l.created = :created
+                        where l = :loginAttempt
+                        """)
+                .setParameter("created", created)
+                .setParameter("loginAttempt", loginAttempt)
+                .executeUpdate();
 
         return loginAttempt;
     }

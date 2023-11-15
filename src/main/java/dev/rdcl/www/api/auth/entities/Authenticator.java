@@ -27,22 +27,22 @@ import java.util.UUID;
 @Entity(name = "Authenticator")
 @Table(name = "auth_authenticator")
 @NamedQueries({
-    @NamedQuery(name = "Authenticator.findByIdAndOwner", query = """
-        select a
-        from Authenticator a
-        where a.owner.id = :owner and a.id = :id
-        """),
-    @NamedQuery(name = "Authenticator.findByEmail", query = """
-        select a
-        from Authenticator a
-        where a.owner.email = :email
-        """),
-    @NamedQuery(name = "Authenticator.findByKeyId", query = """
-        select a
-        from Authenticator a
-        join Identity i on a.owner = i
-        where a.keyId = :keyId
-        """),
+        @NamedQuery(name = "Authenticator.findByIdAndOwner", query = """
+                select a
+                from Authenticator a
+                where a.owner.id = :owner and a.id = :id
+                """),
+        @NamedQuery(name = "Authenticator.findByEmail", query = """
+                select a
+                from Authenticator a
+                where a.owner.email = :email
+                """),
+        @NamedQuery(name = "Authenticator.findByKeyId", query = """
+                select a
+                from Authenticator a
+                join Identity i on a.owner = i
+                where a.keyId = :keyId
+                """),
 })
 public class Authenticator {
 

@@ -9,8 +9,8 @@ public class InvalidCredentialMapper implements ExceptionMapper<InvalidCredentia
     @Override
     public Response toResponse(InvalidCredential exception) {
         return Response
-            .status(Response.Status.BAD_REQUEST)
-            .entity(exception.getMessage())
-            .build();
+                .status(Response.Status.BAD_REQUEST)
+                .entity(exception.getMessage())
+                .build();
     }
 }

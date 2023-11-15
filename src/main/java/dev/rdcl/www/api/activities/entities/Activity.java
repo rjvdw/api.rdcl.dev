@@ -41,28 +41,28 @@ import java.util.UUID;
 @Entity(name = "Activity")
 @Table(name = "activity")
 @NamedQueries({
-    @NamedQuery(name = "Activity.findUpcoming", query = """
-        select a
-        from Activity a
-        where a.owner.id = :owner
-        and whenPivot >= :when
-        order by starts
-        """),
+        @NamedQuery(name = "Activity.findUpcoming", query = """
+                select a
+                from Activity a
+                where a.owner.id = :owner
+                and whenPivot >= :when
+                order by starts
+                """),
 
-    @NamedQuery(name = "Activity.findPast", query = """
-        select a
-        from Activity a
-        where a.owner.id = :owner
-        and whenPivot < :when
-        order by coalesce(a.ends, a.starts) desc
-        """),
+        @NamedQuery(name = "Activity.findPast", query = """
+                select a
+                from Activity a
+                where a.owner.id = :owner
+                and whenPivot < :when
+                order by coalesce(a.ends, a.starts) desc
+                """),
 
-    @NamedQuery(name = "Activity.findById", query = """
-        select a
-        from Activity a
-        where a.owner.id = :owner
-        and a.id = :id
-        """),
+        @NamedQuery(name = "Activity.findById", query = """
+                select a
+                from Activity a
+                where a.owner.id = :owner
+                and a.id = :id
+                """),
 })
 public class Activity {
 
@@ -158,7 +158,7 @@ public class Activity {
     @FormParam("labels")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "activity_label", joinColumns = {
-        @JoinColumn(name = "activity"),
+            @JoinColumn(name = "activity"),
     })
     @Column(name = "text", nullable = false, updatable = false)
     private List<String> labels;

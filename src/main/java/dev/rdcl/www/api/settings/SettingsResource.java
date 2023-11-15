@@ -31,7 +31,7 @@ public class SettingsResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     public String getSettings(
-        @Context SecurityContext ctx
+            @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
 
@@ -42,8 +42,8 @@ public class SettingsResource {
     @RolesAllowed("user")
     @Consumes(MediaType.APPLICATION_JSON)
     public void saveSettings(
-        @Context SecurityContext ctx,
-        @Valid @Json String settings
+            @Context SecurityContext ctx,
+            @Valid @Json String settings
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         settingsService.saveSettings(ownerId, settings);

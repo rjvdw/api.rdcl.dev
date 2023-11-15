@@ -23,27 +23,27 @@ public class ActivityService {
 
     public List<Activity> getUpcomingActivities(UUID owner, Instant when) {
         return em
-            .createNamedQuery("Activity.findUpcoming", Activity.class)
-            .setParameter("owner", owner)
-            .setParameter("when", when)
-            .getResultList();
+                .createNamedQuery("Activity.findUpcoming", Activity.class)
+                .setParameter("owner", owner)
+                .setParameter("when", when)
+                .getResultList();
     }
 
     public List<Activity> getPastActivities(UUID owner, Instant when) {
         return em
-            .createNamedQuery("Activity.findPast", Activity.class)
-            .setParameter("owner", owner)
-            .setParameter("when", when)
-            .getResultList();
+                .createNamedQuery("Activity.findPast", Activity.class)
+                .setParameter("owner", owner)
+                .setParameter("when", when)
+                .getResultList();
     }
 
     public Optional<Activity> getActivity(UUID ownerId, UUID activityId) {
         return em
-            .createNamedQuery("Activity.findById", Activity.class)
-            .setParameter("owner", ownerId)
-            .setParameter("id", activityId)
-            .getResultStream()
-            .findFirst();
+                .createNamedQuery("Activity.findById", Activity.class)
+                .setParameter("owner", ownerId)
+                .setParameter("id", activityId)
+                .getResultStream()
+                .findFirst();
     }
 
     @Transactional

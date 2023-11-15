@@ -42,7 +42,7 @@ public class HealthResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     public String getSettings(
-        @Context SecurityContext ctx
+            @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
 
@@ -54,8 +54,8 @@ public class HealthResource {
     @RolesAllowed("user")
     @Consumes(MediaType.APPLICATION_JSON)
     public void saveSettings(
-        @Context SecurityContext ctx,
-        @Valid @Json String settings
+            @Context SecurityContext ctx,
+            @Valid @Json String settings
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         healthService.saveSettings(ownerId, settings);
@@ -65,9 +65,9 @@ public class HealthResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     public ListHealthResponse list(
-        @QueryParam("from") LocalDate from,
-        @QueryParam("to") LocalDate to,
-        @Context SecurityContext ctx
+            @QueryParam("from") LocalDate from,
+            @QueryParam("to") LocalDate to,
+            @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         List<Health> health;
@@ -95,9 +95,9 @@ public class HealthResource {
     @RolesAllowed("user")
     @Consumes(MediaType.APPLICATION_JSON)
     public void save(
-        @PathParam("date") LocalDate date,
-        @Context SecurityContext ctx,
-        @Valid @Json String data
+            @PathParam("date") LocalDate date,
+            @Context SecurityContext ctx,
+            @Valid @Json String data
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         healthService.save(date, ownerId, data);
@@ -107,8 +107,8 @@ public class HealthResource {
     @Path("/{date}")
     @RolesAllowed("user")
     public void delete(
-        @PathParam("date") LocalDate date,
-        @Context SecurityContext ctx
+            @PathParam("date") LocalDate date,
+            @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         healthService.delete(date, ownerId);

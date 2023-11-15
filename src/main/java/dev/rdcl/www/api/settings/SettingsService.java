@@ -21,21 +21,21 @@ public class SettingsService {
 
     public String getSettings(UUID ownerId) {
         return em
-            .createNamedQuery("UserSettings.get", UserSettings.class)
-            .setParameter("owner", ownerId)
-            .getResultStream()
-            .findAny()
-            .map(UserSettings::getSettings)
-            .orElse("{}");
+                .createNamedQuery("UserSettings.get", UserSettings.class)
+                .setParameter("owner", ownerId)
+                .getResultStream()
+                .findAny()
+                .map(UserSettings::getSettings)
+                .orElse("{}");
     }
 
     @Transactional
     public void saveSettings(UUID ownerId, String settings) {
         Optional<UserSettings> result = em
-            .createNamedQuery("UserSettings.get", UserSettings.class)
-            .setParameter("owner", ownerId)
-            .getResultStream()
-            .findAny();
+                .createNamedQuery("UserSettings.get", UserSettings.class)
+                .setParameter("owner", ownerId)
+                .getResultStream()
+                .findAny();
 
         if (result.isPresent()) {
             result.get().setSettings(settings);
@@ -43,9 +43,9 @@ public class SettingsService {
         } else {
             Identity owner = authService.getUser(ownerId);
             UserSettings entity = UserSettings.builder()
-                .owner(owner)
-                .settings(settings)
-                .build();
+                    .owner(owner)
+                    .settings(settings)
+                    .build();
             em.persist(entity);
         }
     }

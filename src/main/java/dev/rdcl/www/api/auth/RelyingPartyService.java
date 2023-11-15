@@ -15,16 +15,16 @@ public class RelyingPartyService {
 
     public RelyingParty getRelyingParty() {
         RelyingPartyIdentity identity = RelyingPartyIdentity.builder()
-            .id(relyingPartyProperties.id())
-            .name(relyingPartyProperties.name())
-            .build();
+                .id(relyingPartyProperties.id())
+                .name(relyingPartyProperties.name())
+                .build();
 
         return RelyingParty.builder()
-            .identity(identity)
-            .credentialRepository(authenticatorRepository)
-            .origins(relyingPartyProperties.origins())
-            .allowOriginSubdomain(relyingPartyProperties.allowOriginSubdomain())
-            .build();
+                .identity(identity)
+                .credentialRepository(authenticatorRepository)
+                .origins(relyingPartyProperties.origins())
+                .allowOriginSubdomain(relyingPartyProperties.allowOriginSubdomain())
+                .build();
     }
 
 }

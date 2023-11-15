@@ -28,17 +28,17 @@ import java.util.UUID;
 @Entity(name = "AuthenticatorAssertion")
 @Table(name = "auth_authenticator_assertion")
 @NamedQueries({
-    @NamedQuery(name = "AuthenticatorAssertion.findById", query = """
-        select aa
-        from AuthenticatorAssertion aa
-        where aa.id = :id
-        """),
+        @NamedQuery(name = "AuthenticatorAssertion.findById", query = """
+                select aa
+                from AuthenticatorAssertion aa
+                where aa.id = :id
+                """),
 
-    @NamedQuery(name = "AuthenticatorAssertion.findByIdAndOwner", query = """
-        select aa
-        from AuthenticatorAssertion aa
-        where aa.id = :id and aa.owner.id = :owner
-        """),
+        @NamedQuery(name = "AuthenticatorAssertion.findByIdAndOwner", query = """
+                select aa
+                from AuthenticatorAssertion aa
+                where aa.id = :id and aa.owner.id = :owner
+                """),
 })
 public class AuthenticatorAssertion {
 

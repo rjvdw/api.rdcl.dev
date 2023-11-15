@@ -52,9 +52,9 @@ public class AuthService {
     public Identity getUser(UUID id) {
         try {
             return em
-                .createNamedQuery("Identity.findById", Identity.class)
-                .setParameter("id", id)
-                .getSingleResult();
+                    .createNamedQuery("Identity.findById", Identity.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
         } catch (NoResultException e) {
             throw new UserNotFound(e);
         }
@@ -63,9 +63,9 @@ public class AuthService {
     public Identity getUser(String email) {
         try {
             return em
-                .createNamedQuery("Identity.findByEmail", Identity.class)
-                .setParameter("email", email)
-                .getSingleResult();
+                    .createNamedQuery("Identity.findByEmail", Identity.class)
+                    .setParameter("email", email)
+                    .getSingleResult();
         } catch (NoResultException e) {
             throw new UserNotFound(e);
         }
@@ -90,24 +90,24 @@ public class AuthService {
             String sessionToken = generateToken(authProperties.sessionTokenLength());
 
             initiateLoginAttemptEvent.fireAsync(new InitiateLoginAttemptEvent(
-                email,
-                callback,
-                sessionToken
+                    email,
+                    callback,
+                    sessionToken
             ));
 
             return new InitiateLoginResult(
-                LoginMode.EMAIL,
-                sessionToken,
-                null
+                    LoginMode.EMAIL,
+                    sessionToken,
+                    null
             );
         }
 
         try {
             AuthenticatorAssertionResult authenticatorAssertionResult = authenticatorService.initiateLogin(email);
             return new InitiateLoginResult(
-                LoginMode.AUTHENTICATOR,
-                authenticatorAssertionResult.options(),
-                authenticatorAssertionResult.id()
+                    LoginMode.AUTHENTICATOR,
+                    authenticatorAssertionResult.options(),
+                    authenticatorAssertionResult.id()
             );
         } catch (JsonProcessingException e) {
             throw new CredentialJsonException(e);
@@ -123,27 +123,27 @@ public class AuthService {
 
     @Transactional
     public CompletionStage<InitiateLoginAttemptCompleteEvent> consume(
-        @ObservesAsync(notifyObserver = Reception.IF_EXISTS) InitiateLoginAttemptEvent event
+            @ObservesAsync(notifyObserver = Reception.IF_EXISTS) InitiateLoginAttemptEvent event
     ) {
         try {
             Identity identity = em
-                .createNamedQuery("Identity.findByEmail", Identity.class)
-                .setParameter("email", event.email())
-                .getSingleResult();
+                    .createNamedQuery("Identity.findByEmail", Identity.class)
+                    .setParameter("email", event.email())
+                    .getSingleResult();
 
             LoginAttempt loginAttempt = LoginAttempt.builder()
-                .sessionToken(event.sessionToken())
-                .verificationCode(generateToken(authProperties.verificationCodeLength()))
-                .identity(identity)
-                .build();
+                    .sessionToken(event.sessionToken())
+                    .verificationCode(generateToken(authProperties.verificationCodeLength()))
+                    .identity(identity)
+                    .build();
 
             em.persist(loginAttempt);
             em.flush();
 
             authMailService.sendVerificationMail(
-                event.email(),
-                loginAttempt.getVerificationCode(),
-                event.callback()
+                    event.email(),
+                    loginAttempt.getVerificationCode(),
+                    event.callback()
             );
 
             return initiateLoginAttemptCompleteEvent.fireAsync(InitiateLoginAttemptCompleteEvent.initiated());
@@ -157,11 +157,11 @@ public class AuthService {
     public Identity verifyLogin(String sessionToken, String verificationCode) {
         try {
             LoginAttempt loginAttempt = em
-                .createNamedQuery("LoginAttempt.findBySessionTokenAndVerificationCode", LoginAttempt.class)
-                .setParameter("sessionToken", sessionToken)
-                .setParameter("verificationCode", verificationCode)
-                .setParameter("createdAfter", expiryThreshold())
-                .getSingleResult();
+                    .createNamedQuery("LoginAttempt.findBySessionTokenAndVerificationCode", LoginAttempt.class)
+                    .setParameter("sessionToken", sessionToken)
+                    .setParameter("verificationCode", verificationCode)
+                    .setParameter("createdAfter", expiryThreshold())
+                    .getSingleResult();
 
             em.remove(loginAttempt);
 
@@ -175,8 +175,8 @@ public class AuthService {
     @Transactional
     public void cleanUpOldLoginAttempts() {
         em.createNamedQuery("LoginAttempt.deleteExpired")
-            .setParameter("createdBefore", expiryThreshold())
-            .executeUpdate();
+                .setParameter("createdBefore", expiryThreshold())
+                .executeUpdate();
     }
 
     private Instant expiryThreshold() {
@@ -187,10 +187,10 @@ public class AuthService {
         if (callback != null) {
             String url = callback.toString();
             em.createNamedQuery("AllowedCallback.findByUrl", AllowedCallback.class)
-                .setParameter("url", url)
-                .getResultStream()
-                .findFirst()
-                .orElseThrow(() -> new InvalidCallback(url));
+                    .setParameter("url", url)
+                    .getResultStream()
+                    .findFirst()
+                    .orElseThrow(() -> new InvalidCallback(url));
         }
     }
 

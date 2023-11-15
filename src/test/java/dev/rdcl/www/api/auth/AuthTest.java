@@ -58,12 +58,12 @@ public class AuthTest {
     @DisplayName("The public key used to verify an authentication token can be retrieved")
     public void testKey() {
         given()
-            .when()
-            .get("/auth/key")
-            .then()
-            .statusCode(200)
-            .body(startsWith("-----BEGIN PUBLIC KEY-----"))
-            .body(endsWith("-----END PUBLIC KEY-----\n"));
+                .when()
+                .get("/auth/key")
+                .then()
+                .statusCode(200)
+                .body(startsWith("-----BEGIN PUBLIC KEY-----"))
+                .body(endsWith("-----END PUBLIC KEY-----\n"));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class AuthTest {
         pendingVerifications = new CountDownLatch(1);
 
         callLogin(Identities.VALID_IDENTITY.getEmail())
-            .then().statusCode(200);
+                .then().statusCode(200);
 
         verifyMails(1);
     }
@@ -83,7 +83,7 @@ public class AuthTest {
         pendingVerifications = new CountDownLatch(1);
 
         callLogin(Identities.VALID_IDENTITY.getEmail(), "https://example.com/login/verify")
-            .then().statusCode(200);
+                .then().statusCode(200);
 
         List<Mail> mails = verifyMails(1);
 
@@ -95,14 +95,14 @@ public class AuthTest {
     @DisplayName("An error is returned when a malformed callback is provided")
     public void testLoginWithMalformedCallback() {
         callLogin(Identities.VALID_IDENTITY.getEmail(), "malformed-uri")
-            .then().statusCode(400);
+                .then().statusCode(400);
     }
 
     @Test
     @DisplayName("An error is returned when a callback which is not allowed is provided")
     public void testLoginWithIllegalCallback() {
         callLogin(Identities.VALID_IDENTITY.getEmail(), "https://example.com/not-allowed/login")
-            .then().statusCode(400);
+                .then().statusCode(400);
     }
 
     @Test
@@ -111,7 +111,7 @@ public class AuthTest {
         pendingVerifications = new CountDownLatch(1);
 
         callLogin(Identities.INVALID_IDENTITY.getEmail())
-            .then().statusCode(200);
+                .then().statusCode(200);
 
         verifyMails(0);
     }
@@ -122,16 +122,16 @@ public class AuthTest {
         pendingVerifications = new CountDownLatch(1);
 
         InitiateLoginResult loginResponse = callLogin(Identities.VALID_IDENTITY.getEmail())
-            .then().statusCode(200)
-            .extract().body().as(InitiateLoginResult.class);
+                .then().statusCode(200)
+                .extract().body().as(InitiateLoginResult.class);
 
         List<Mail> mails = verifyMails(1);
 
         String verificationCode = extractVerificationCode(mails.get(0));
 
         VerificationResponse verificationResponse = callVerify(loginResponse, verificationCode)
-            .then().statusCode(200)
-            .extract().body().as(VerificationResponse.class);
+                .then().statusCode(200)
+                .extract().body().as(VerificationResponse.class);
 
         JsonWebToken jwt = jwtParser.parse(verificationResponse.jwt());
         assertThat(jwt.getSubject(), is("f277b076-f061-403c-bf7b-266eab926677"));
@@ -141,7 +141,7 @@ public class AuthTest {
     @DisplayName("When a user tries to verify their log-in with an invalid or expired session they get an error response")
     public void testVerifyLoginInvalid() {
         callVerify("invalid session token", "invalid verification code")
-            .then().statusCode(401);
+                .then().statusCode(401);
     }
 
     @Test
@@ -157,24 +157,24 @@ public class AuthTest {
         String jwt = jwtService.issueAuthToken(Identities.VALID_IDENTITY);
 
         callMe(jwt)
-            .then()
-            .statusCode(200)
-            .body("name", is(Identities.VALID_IDENTITY.getName()));
+                .then()
+                .statusCode(200)
+                .body("name", is(Identities.VALID_IDENTITY.getName()));
 
         callPatchMe(jwt, "New Name")
-            .then()
-            .statusCode(200)
-            .body("name", is("New Name"));
+                .then()
+                .statusCode(200)
+                .body("name", is("New Name"));
 
         callMe(jwt)
-            .then()
-            .statusCode(200)
-            .body("name", is("New Name"));
+                .then()
+                .statusCode(200)
+                .body("name", is("New Name"));
 
         callPatchMe(jwt, Identities.VALID_IDENTITY.getName())
-            .then()
-            .statusCode(200)
-            .body("name", is(Identities.VALID_IDENTITY.getName()));
+                .then()
+                .statusCode(200)
+                .body("name", is(Identities.VALID_IDENTITY.getName()));
     }
 
     @Test
@@ -189,30 +189,30 @@ public class AuthTest {
 
     private Response callMe(String jwt) {
         return given()
-            .header("Authorization", "Bearer %s".formatted(jwt))
-            .when().get("/auth/me");
+                .header("Authorization", "Bearer %s".formatted(jwt))
+                .when().get("/auth/me");
     }
 
     private Response callPatchMe(String jwt, String name) {
         return given()
-            .header("Authorization", "Bearer %s".formatted(jwt))
-            .formParam("name", name)
-            .when().patch("/auth/me");
+                .header("Authorization", "Bearer %s".formatted(jwt))
+                .formParam("name", name)
+                .when().patch("/auth/me");
     }
 
     private Response callLogin(String email) {
         return given()
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .formParam("email", email)
-            .when().post("/auth/login");
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .formParam("email", email)
+                .when().post("/auth/login");
     }
 
     private Response callLogin(String email, String callback) {
         return given()
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .formParam("email", email)
-            .formParam("callback", callback)
-            .when().post("/auth/login");
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .formParam("email", email)
+                .formParam("callback", callback)
+                .when().post("/auth/login");
     }
 
     private Response callVerify(InitiateLoginResult loginResponse, String verificationCode) {
@@ -223,10 +223,10 @@ public class AuthTest {
 
     private Response callVerify(String sessionToken, String verificationCode) {
         return given()
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .formParam("session-token", sessionToken)
-            .formParam("verification-code", verificationCode)
-            .when().post("/auth/login/verify");
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .formParam("session-token", sessionToken)
+                .formParam("verification-code", verificationCode)
+                .when().post("/auth/login/verify");
     }
 
     private List<Mail> verifyMails(int expected) {

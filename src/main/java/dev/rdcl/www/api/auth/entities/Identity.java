@@ -26,16 +26,16 @@ import java.util.UUID;
 @Entity(name = "Identity")
 @Table(name = "auth_identity")
 @NamedQueries({
-    @NamedQuery(name = "Identity.findById", query = """
-        select i
-        from Identity i
-        where i.id = :id
-        """),
-    @NamedQuery(name = "Identity.findByEmail", query = """
-        select i
-        from Identity i
-        where i.email = :email
-        """),
+        @NamedQuery(name = "Identity.findById", query = """
+                select i
+                from Identity i
+                where i.id = :id
+                """),
+        @NamedQuery(name = "Identity.findByEmail", query = """
+                select i
+                from Identity i
+                where i.email = :email
+                """),
 })
 public class Identity {
 

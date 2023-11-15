@@ -31,63 +31,63 @@ import java.time.LocalDate;
 @IdClass(HealthKey.class)
 @Table(name = "health")
 @NamedQueries({
-    @NamedQuery(name = "Health.findBefore", query = """
-        select h
-        from Health h
-        where h.owner.id = :owner
-        and h.date <= :to
-        order by h.date desc
-        """),
+        @NamedQuery(name = "Health.findBefore", query = """
+                select h
+                from Health h
+                where h.owner.id = :owner
+                and h.date <= :to
+                order by h.date desc
+                """),
 
-    @NamedQuery(name = "Health.findAfter", query = """
-        select h
-        from Health h
-        where h.owner.id = :owner
-        and h.date >= :from
-        order by h.date desc
-        """),
+        @NamedQuery(name = "Health.findAfter", query = """
+                select h
+                from Health h
+                where h.owner.id = :owner
+                and h.date >= :from
+                order by h.date desc
+                """),
 
-    @NamedQuery(name = "Health.findBetween", query = """
-        select h
-        from Health h
-        where h.owner.id = :owner
-        and h.date between :from and :to
-        order by h.date desc
-        """),
+        @NamedQuery(name = "Health.findBetween", query = """
+                select h
+                from Health h
+                where h.owner.id = :owner
+                and h.date between :from and :to
+                order by h.date desc
+                """),
 
-    @NamedQuery(name = "Health.findByDate", query = """
-        select h
-        from Health h
-        where h.owner.id = :owner
-        and h.date = :date
-        """),
+        @NamedQuery(name = "Health.findByDate", query = """
+                select h
+                from Health h
+                where h.owner.id = :owner
+                and h.date = :date
+                """),
 
-    @NamedQuery(name = "Health.count", query = """
-        select count(h.id.date)
-        from Health h
-        where h.owner.id = :owner
-        """),
+        @NamedQuery(name = "Health.count", query = """
+                select count(h.id.date)
+                from Health h
+                where h.owner.id = :owner
+                """),
 
-    @NamedQuery(name = "Health.countBefore", query = """
-        select count(h.id.date)
-        from Health h
-        where h.owner.id = :owner
-        and h.date <= :to
-        """),
+        @NamedQuery(name = "Health.countBefore", query = """
+                select count(h.id.date)
+                from Health h
+                where h.owner.id = :owner
+                and h.date <= :to
+                """),
 
-    @NamedQuery(name = "Health.countAfter", query = """
-        select count(h.id.date)
-        from Health h
-        where h.owner.id = :owner
-        and h.date >= :from
-        """),
+        @NamedQuery(name = "Health.countAfter", query = """
+                select count(h.id.date)
+                from Health h
+                where h.owner.id = :owner
+                and h.date >= :from
+                """),
 
-    @NamedQuery(name = "Health.countBetween", query = """
-        select count(h.id.date)
-        from Health h
-        where h.owner.id = :owner
-        and h.date between :from and :to
-        """),
+        @NamedQuery(name = "Health.countBetween", query = """
+                select count(h.id.date)
+                from Health h
+                where h.owner.id = :owner
+                and h.date between :from and :to
+                """),
 })
 public class Health {
 

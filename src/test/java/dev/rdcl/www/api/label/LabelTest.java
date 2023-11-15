@@ -29,7 +29,7 @@ public class LabelTest {
     @BeforeEach
     public void setup() {
         Mockito.when(jwtService.verifyAuthToken(any(), any()))
-            .thenReturn(Identities.VALID_IDENTITY.getId());
+                .thenReturn(Identities.VALID_IDENTITY.getId());
     }
 
     @Test
@@ -37,17 +37,17 @@ public class LabelTest {
     @DisplayName("User creates and then fetches labels")
     public void testEndpoints() {
         Map<String, String> labels = Map.of(
-            "label1", "{}",
-            "label2", "{\"prop\":\"val1\"}",
-            "label3", "{\"prop\":\"val2\"}",
-            "label4", "{\"prop\":\"val3\"}"
+                "label1", "{}",
+                "label2", "{\"prop\":\"val1\"}",
+                "label3", "{\"prop\":\"val2\"}",
+                "label4", "{\"prop\":\"val3\"}"
         );
 
         update(labels).then().statusCode(204);
 
         ListLabelsResponse response = get()
-            .then().statusCode(200)
-            .extract().as(ListLabelsResponse.class);
+                .then().statusCode(200)
+                .extract().as(ListLabelsResponse.class);
 
         assertThat(response.labels().keySet(), hasSize(4));
         assertThat(response.labels(), hasEntry("label1", "{}"));
@@ -56,16 +56,16 @@ public class LabelTest {
         assertThat(response.labels(), hasEntry("label4", "{\"prop\": \"val3\"}"));
 
         labels = Map.of(
-            "label3", "{\"prop\":\"val10\"}",
-            "label4", "{\"prop\":\"val11\"}",
-            "label5", "{}"
+                "label3", "{\"prop\":\"val10\"}",
+                "label4", "{\"prop\":\"val11\"}",
+                "label5", "{}"
         );
 
         update(labels).then().statusCode(204);
 
         response = get()
-            .then().statusCode(200)
-            .extract().as(ListLabelsResponse.class);
+                .then().statusCode(200)
+                .extract().as(ListLabelsResponse.class);
 
         assertThat(response.labels().keySet(), hasSize(3));
         assertThat(response.labels(), hasEntry("label3", "{\"prop\": \"val10\"}"));
@@ -75,13 +75,13 @@ public class LabelTest {
 
     private Response get() {
         return given()
-            .when().get("/label");
+                .when().get("/label");
     }
 
     private Response update(Map<String, String> labels) {
         return given()
-            .body(labels)
-            .header("Content-Type", "application/json")
-            .when().post("/label");
+                .body(labels)
+                .header("Content-Type", "application/json")
+                .when().post("/label");
     }
 }

@@ -9,8 +9,8 @@ public class InvalidCallbackMapper implements ExceptionMapper<InvalidCallback> {
     @Override
     public Response toResponse(InvalidCallback exception) {
         return Response
-            .status(Response.Status.BAD_REQUEST)
-            .entity(exception.getMessage())
-            .build();
+                .status(Response.Status.BAD_REQUEST)
+                .entity(exception.getMessage())
+                .build();
     }
 }

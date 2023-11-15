@@ -34,9 +34,9 @@ public class AuthMailServiceTest {
     @DisplayName("A mail with a verification code is sent when a user tries to log in")
     public void testSendVerificationMail() {
         authMailService.sendVerificationMail(
-            Identities.VALID_IDENTITY.getEmail(),
-            "my-verification-code",
-            null
+                Identities.VALID_IDENTITY.getEmail(),
+                "my-verification-code",
+                null
         );
 
         List<Mail> mails = mailbox.getMailsSentTo(Identities.VALID_IDENTITY.getEmail());

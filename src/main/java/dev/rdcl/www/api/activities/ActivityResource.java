@@ -43,9 +43,9 @@ public class ActivityResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     public ListResponse list(
-        @Context SecurityContext ctx,
-        @QueryParam("past") @DefaultValue("false") boolean getPastActivities,
-        @QueryParam("when") Instant when
+            @Context SecurityContext ctx,
+            @QueryParam("past") @DefaultValue("false") boolean getPastActivities,
+            @QueryParam("when") Instant when
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         if (when == null) {
@@ -53,8 +53,8 @@ public class ActivityResource {
         }
 
         List<Activity> activities = getPastActivities
-            ? activityService.getPastActivities(ownerId, when)
-            : activityService.getUpcomingActivities(ownerId, when);
+                ? activityService.getPastActivities(ownerId, when)
+                : activityService.getUpcomingActivities(ownerId, when);
 
         return new ListResponse(activities);
     }
@@ -64,8 +64,8 @@ public class ActivityResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     public Optional<Activity> get(
-        @PathParam("uuid") UUID activityId,
-        @Context SecurityContext ctx
+            @PathParam("uuid") UUID activityId,
+            @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
 
@@ -77,8 +77,8 @@ public class ActivityResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public Activity create(
-        @BeanParam @Valid Activity activity,
-        @Context SecurityContext ctx
+            @BeanParam @Valid Activity activity,
+            @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         activityService.createActivity(ownerId, activity);
@@ -92,9 +92,9 @@ public class ActivityResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public Activity update(
-        @PathParam("uuid") UUID activityId,
-        @BeanParam @Valid Activity activity,
-        @Context SecurityContext ctx
+            @PathParam("uuid") UUID activityId,
+            @BeanParam @Valid Activity activity,
+            @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         activityService.updateActivity(ownerId, activityId, activity);
@@ -106,8 +106,8 @@ public class ActivityResource {
     @Path("/{uuid}")
     @RolesAllowed("user")
     public void remove(
-        @PathParam("uuid") UUID activityId,
-        @Context SecurityContext ctx
+            @PathParam("uuid") UUID activityId,
+            @Context SecurityContext ctx
     ) {
         UUID ownerId = jwtService.verifyAuthToken(jwt, ctx);
         activityService.deleteActivity(ownerId, activityId);

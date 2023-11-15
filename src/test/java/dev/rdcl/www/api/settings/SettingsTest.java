@@ -24,7 +24,7 @@ public class SettingsTest {
     @BeforeEach
     public void setup() {
         Mockito.when(jwtService.verifyAuthToken(any(), any()))
-            .thenReturn(Identities.VALID_IDENTITY.getId());
+                .thenReturn(Identities.VALID_IDENTITY.getId());
     }
 
     @Test
@@ -32,28 +32,28 @@ public class SettingsTest {
     @DisplayName("Fetch and update user settings")
     public void testSettingsEndpoints() {
         given()
-            .when()
-            .get("/settings")
-            .then()
-            .statusCode(200)
-            .contentType("application/json")
-            .body("", aMapWithSize(0));
+                .when()
+                .get("/settings")
+                .then()
+                .statusCode(200)
+                .contentType("application/json")
+                .body("", aMapWithSize(0));
 
         given()
-            .contentType("application/json")
-            .body("{\"foo\": \"bar\"}")
-            .when()
-            .post("/settings")
-            .then()
-            .statusCode(204);
+                .contentType("application/json")
+                .body("{\"foo\": \"bar\"}")
+                .when()
+                .post("/settings")
+                .then()
+                .statusCode(204);
 
         given()
-            .when()
-            .get("/settings")
-            .then()
-            .statusCode(200)
-            .contentType("application/json")
-            .body("", aMapWithSize(1))
-            .body("foo", is("bar"));
+                .when()
+                .get("/settings")
+                .then()
+                .statusCode(200)
+                .contentType("application/json")
+                .body("", aMapWithSize(1))
+                .body("foo", is("bar"));
     }
 }

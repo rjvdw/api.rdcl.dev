@@ -9,8 +9,8 @@ public class CredentialJsonExceptionMapper implements ExceptionMapper<Credential
     @Override
     public Response toResponse(CredentialJsonException exception) {
         return Response
-            .status(Response.Status.INTERNAL_SERVER_ERROR)
-            .entity(exception.getMessage())
-            .build();
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(exception.getMessage())
+                .build();
     }
 }

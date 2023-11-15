@@ -56,10 +56,10 @@ public class AuthenticatorService {
 
         try {
             return em
-                .createNamedQuery("Authenticator.findByIdAndOwner", Authenticator.class)
-                .setParameter("id", authenticatorId)
-                .setParameter("owner", owner)
-                .getSingleResult();
+                    .createNamedQuery("Authenticator.findByIdAndOwner", Authenticator.class)
+                    .setParameter("id", authenticatorId)
+                    .setParameter("owner", owner)
+                    .getSingleResult();
         } catch (NoResultException e) {
             throw new AuthenticatorNotFound(e);
         }
@@ -67,9 +67,9 @@ public class AuthenticatorService {
 
     public List<Authenticator> getAuthenticators(String email) {
         return em
-            .createNamedQuery("Authenticator.findByEmail", Authenticator.class)
-            .setParameter("email", email)
-            .getResultList();
+                .createNamedQuery("Authenticator.findByEmail", Authenticator.class)
+                .setParameter("email", email)
+                .getResultList();
     }
 
     @Transactional
@@ -77,20 +77,20 @@ public class AuthenticatorService {
         Duration timeout = Duration.ofSeconds(authProperties.authenticatorTimeoutSeconds());
 
         AssertionRequest options = relyingPartyService
-            .getRelyingParty()
-            .startAssertion(
-                StartAssertionOptions.builder()
-                    .username(email)
-                    .build()
-            );
+                .getRelyingParty()
+                .startAssertion(
+                        StartAssertionOptions.builder()
+                                .username(email)
+                                .build()
+                );
 
         String optionsString = options.toCredentialsGetJson();
 
         AuthenticatorAssertion assertion = AuthenticatorAssertion.builder()
-            .owner(authService.getUser(email))
-            .options(options.toJson())
-            .timeout(timeout.getSeconds())
-            .build();
+                .owner(authService.getUser(email))
+                .options(options.toJson())
+                .timeout(timeout.getSeconds())
+                .build();
 
         em.persist(assertion);
         em.flush();
@@ -101,11 +101,11 @@ public class AuthenticatorService {
     @Transactional
     public String completeLogin(UUID assertionId, String credentialJson) throws JsonProcessingException {
         AuthenticatorAssertion assertion = em
-            .createNamedQuery("AuthenticatorAssertion.findById", AuthenticatorAssertion.class)
-            .setParameter("id", assertionId)
-            .getResultStream()
-            .findAny()
-            .orElseThrow(() -> new InvalidCredential("No active login"));
+                .createNamedQuery("AuthenticatorAssertion.findById", AuthenticatorAssertion.class)
+                .setParameter("id", assertionId)
+                .getResultStream()
+                .findAny()
+                .orElseThrow(() -> new InvalidCredential("No active login"));
 
         AssertionRequest request = AssertionRequest.fromJson(assertion.getOptions());
 
@@ -119,20 +119,20 @@ public class AuthenticatorService {
         AssertionResult result;
         try {
             result = relyingPartyService.getRelyingParty()
-                .finishAssertion(
-                    FinishAssertionOptions.builder()
-                        .request(request)
-                        .response(response)
-                        .build()
-                );
+                    .finishAssertion(
+                            FinishAssertionOptions.builder()
+                                    .request(request)
+                                    .response(response)
+                                    .build()
+                    );
         } catch (AssertionFailedException e) {
             throw new InvalidCredential(e.getMessage(), e);
         }
 
         Authenticator authenticator = em
-            .createNamedQuery("Authenticator.findByKeyId", Authenticator.class)
-            .setParameter("keyId", result.getCredential().getCredentialId().getBytes())
-            .getSingleResult();
+                .createNamedQuery("Authenticator.findByKeyId", Authenticator.class)
+                .setParameter("keyId", result.getCredential().getCredentialId().getBytes())
+                .getSingleResult();
         authenticator.setLastUsed(Instant.now());
 
         em.persist(authenticator);
@@ -149,25 +149,25 @@ public class AuthenticatorService {
         Duration timeout = Duration.ofSeconds(authProperties.authenticatorTimeoutSeconds());
 
         PublicKeyCredentialCreationOptions options = relyingPartyService
-            .getRelyingParty()
-            .startRegistration(StartRegistrationOptions.builder()
-                .user(Mappers.identityToUserIdentity(identity))
-                .authenticatorSelection(AuthenticatorSelectionCriteria.builder()
-                    .userVerification(UserVerificationRequirement.REQUIRED)
-                    .residentKey(ResidentKeyRequirement.REQUIRED)
-                    .build()
-                )
-                .timeout(timeout.toMillis())
-                .build()
-            );
+                .getRelyingParty()
+                .startRegistration(StartRegistrationOptions.builder()
+                        .user(Mappers.identityToUserIdentity(identity))
+                        .authenticatorSelection(AuthenticatorSelectionCriteria.builder()
+                                .userVerification(UserVerificationRequirement.REQUIRED)
+                                .residentKey(ResidentKeyRequirement.REQUIRED)
+                                .build()
+                        )
+                        .timeout(timeout.toMillis())
+                        .build()
+                );
 
         String optionsString = options.toCredentialsCreateJson();
 
         AuthenticatorAssertion assertion = AuthenticatorAssertion.builder()
-            .owner(identity)
-            .options(options.toJson())
-            .timeout(timeout.getSeconds())
-            .build();
+                .owner(identity)
+                .options(options.toJson())
+                .timeout(timeout.getSeconds())
+                .build();
 
         em.persist(assertion);
         em.flush();
@@ -187,36 +187,36 @@ public class AuthenticatorService {
         }
 
         AuthenticatorAssertion registration = em
-            .createNamedQuery("AuthenticatorAssertion.findByIdAndOwner", AuthenticatorAssertion.class)
-            .setParameter("id", assertionId)
-            .setParameter("owner", owner)
-            .getResultStream()
-            .findAny()
-            .orElseThrow(() -> new InvalidCredential("No active registration"));
+                .createNamedQuery("AuthenticatorAssertion.findByIdAndOwner", AuthenticatorAssertion.class)
+                .setParameter("id", assertionId)
+                .setParameter("owner", owner)
+                .getResultStream()
+                .findAny()
+                .orElseThrow(() -> new InvalidCredential("No active registration"));
 
         PublicKeyCredentialCreationOptions request = PublicKeyCredentialCreationOptions.fromJson(registration.getOptions());
 
         RegistrationResult result;
         try {
             result = relyingPartyService
-                .getRelyingParty()
-                .finishRegistration(
-                    FinishRegistrationOptions.builder()
-                        .request(request)
-                        .response(response)
-                        .build()
-                );
+                    .getRelyingParty()
+                    .finishRegistration(
+                            FinishRegistrationOptions.builder()
+                                    .request(request)
+                                    .response(response)
+                                    .build()
+                    );
         } catch (RegistrationFailedException e) {
             throw new InvalidCredential(e.getMessage(), e);
         }
 
         em.remove(registration);
         Authenticator authenticator = Authenticator.builder()
-            .owner(identity)
-            .keyId(result.getKeyId().getId().getBytes())
-            .cose(result.getPublicKeyCose().getBytes())
-            .signatureCount(result.getSignatureCount())
-            .build();
+                .owner(identity)
+                .keyId(result.getKeyId().getId().getBytes())
+                .cose(result.getPublicKeyCose().getBytes())
+                .signatureCount(result.getSignatureCount())
+                .build();
 
         em.persist(authenticator);
         em.flush();
@@ -236,25 +236,25 @@ public class AuthenticatorService {
     @Transactional
     public void remove(UUID owner, UUID authenticatorId) {
         em
-            .createNamedQuery("Authenticator.findByIdAndOwner", Authenticator.class)
-            .setParameter("id", authenticatorId)
-            .setParameter("owner", owner)
-            .getResultStream()
-            .findAny()
-            .ifPresent((authenticator) -> {
-                em.remove(authenticator);
-                em.flush();
-            });
+                .createNamedQuery("Authenticator.findByIdAndOwner", Authenticator.class)
+                .setParameter("id", authenticatorId)
+                .setParameter("owner", owner)
+                .getResultStream()
+                .findAny()
+                .ifPresent((authenticator) -> {
+                    em.remove(authenticator);
+                    em.flush();
+                });
     }
 
     @Scheduled(every = "1h")
     @Transactional
     public void cleanUpOldAuthenticatorRegistrations() {
         em.createNativeQuery("""
-                delete
-                from auth_authenticator_assertion as r
-                where r.created + r.timeout * interval '1 second' < now()
-                """)
-            .executeUpdate();
+                        delete
+                        from auth_authenticator_assertion as r
+                        where r.created + r.timeout * interval '1 second' < now()
+                        """)
+                .executeUpdate();
     }
 }

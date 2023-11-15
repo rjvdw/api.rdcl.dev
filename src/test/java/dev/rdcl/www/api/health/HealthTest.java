@@ -33,7 +33,7 @@ public class HealthTest {
     @BeforeEach
     public void setup() {
         Mockito.when(jwtService.verifyAuthToken(any(), any()))
-            .thenReturn(Identities.VALID_IDENTITY.getId());
+                .thenReturn(Identities.VALID_IDENTITY.getId());
     }
 
     @Test
@@ -41,29 +41,29 @@ public class HealthTest {
     @DisplayName("Fetch and update health settings")
     public void testSettingsEndpoints() {
         given()
-            .when()
-            .get("/health/settings")
-            .then()
-            .statusCode(200)
-            .contentType("application/json")
-            .body("", aMapWithSize(0));
+                .when()
+                .get("/health/settings")
+                .then()
+                .statusCode(200)
+                .contentType("application/json")
+                .body("", aMapWithSize(0));
 
         given()
-            .contentType("application/json")
-            .body("{\"height\": 170}")
-            .when()
-            .post("/health/settings")
-            .then()
-            .statusCode(204);
+                .contentType("application/json")
+                .body("{\"height\": 170}")
+                .when()
+                .post("/health/settings")
+                .then()
+                .statusCode(204);
 
         given()
-            .when()
-            .get("/health/settings")
-            .then()
-            .statusCode(200)
-            .contentType("application/json")
-            .body("", aMapWithSize(1))
-            .body("height", is(170));
+                .when()
+                .get("/health/settings")
+                .then()
+                .statusCode(200)
+                .contentType("application/json")
+                .body("", aMapWithSize(1))
+                .body("height", is(170));
     }
 
     @Test
@@ -77,89 +77,89 @@ public class HealthTest {
              date = date.plusDays(1)
         ) {
             given()
-                .contentType("application/json")
-                .body("{}")
-                .when()
-                .put(url(date))
-                .then()
-                .statusCode(204);
+                    .contentType("application/json")
+                    .body("{}")
+                    .when()
+                    .put(url(date))
+                    .then()
+                    .statusCode(204);
         }
 
         given()
-            .when()
-            .get(url())
-            .then()
-            .statusCode(200)
-            .body("health", hasSize(10))
-            .body("count", is(14));
+                .when()
+                .get(url())
+                .then()
+                .statusCode(200)
+                .body("health", hasSize(10))
+                .body("count", is(14));
 
         given()
-            .when()
-            .get(url(null, "2012-01-05"))
-            .then()
-            .statusCode(200)
-            .body("health", hasSize(5))
-            .body("count", is(5));
+                .when()
+                .get(url(null, "2012-01-05"))
+                .then()
+                .statusCode(200)
+                .body("health", hasSize(5))
+                .body("count", is(5));
 
         given()
-            .when()
-            .get(url("2012-01-01", null))
-            .then()
-            .statusCode(200)
-            .body("health", hasSize(10))
-            .body("count", is(14));
+                .when()
+                .get(url("2012-01-01", null))
+                .then()
+                .statusCode(200)
+                .body("health", hasSize(10))
+                .body("count", is(14));
 
         given()
-            .when()
-            .get(url("2012-01-01", "2012-01-05"))
-            .then()
-            .statusCode(200)
-            .body("health", hasSize(5))
-            .body("count", is(5));
+                .when()
+                .get(url("2012-01-01", "2012-01-05"))
+                .then()
+                .statusCode(200)
+                .body("health", hasSize(5))
+                .body("count", is(5));
 
         given()
-            .when()
-            .get(url("2012-01-10", null))
-            .then()
-            .statusCode(200)
-            .body("health", hasSize(5))
-            .body("count", is(5));
+                .when()
+                .get(url("2012-01-10", null))
+                .then()
+                .statusCode(200)
+                .body("health", hasSize(5))
+                .body("count", is(5));
 
         for (LocalDate date = LocalDate.parse("2012-01-05"), upto = LocalDate.parse("2012-01-15");
              date.isBefore(upto);
              date = date.plusDays(1)
         ) {
             given()
-                .when()
-                .delete(url(date))
-                .then()
-                .statusCode(204);
+                    .when()
+                    .delete(url(date))
+                    .then()
+                    .statusCode(204);
         }
 
         given()
-            .when()
-            .get(url("2012-01-01", null))
-            .then()
-            .statusCode(200)
-            .body("health", hasSize(4))
-            .body("count", is(4));
+                .when()
+                .get(url("2012-01-01", null))
+                .then()
+                .statusCode(200)
+                .body("health", hasSize(4))
+                .body("count", is(4));
 
         given()
-            .contentType("application/json")
-            .body("[]")
-            .when()
-            .put(url("2012-01-01"))
-            .then()
-            .statusCode(204);
+                .contentType("application/json")
+                .body("[]")
+                .when()
+                .put(url("2012-01-01"))
+                .then()
+                .statusCode(204);
 
         given()
-            .when()
-            .get(url("2012-01-01", "2012-01-01"))
-            .then()
-            .statusCode(200)
-            .body("health", hasSize(1))
-            .body("health[0].data", is("[]"))
-            .body("count", is(1));
+                .when()
+                .get(url("2012-01-01", "2012-01-01"))
+                .then()
+                .statusCode(200)
+                .body("health", hasSize(1))
+                .body("health[0].data", is("[]"))
+                .body("count", is(1));
     }
 
     @Test
@@ -168,12 +168,12 @@ public class HealthTest {
     public void testRejectInvalidJson() {
 
         given()
-            .body("}{")
-            .contentType("application/json")
-            .when()
-            .put(url("2012-01-01"))
-            .then()
-            .statusCode(400);
+                .body("}{")
+                .contentType("application/json")
+                .when()
+                .put(url("2012-01-01"))
+                .then()
+                .statusCode(400);
     }
 
     private String url() {

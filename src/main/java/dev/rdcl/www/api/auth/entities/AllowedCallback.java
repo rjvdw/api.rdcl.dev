@@ -23,11 +23,11 @@ import java.util.UUID;
 @Entity(name = "AllowedCallback")
 @Table(name = "auth_allowed_callback")
 @NamedQueries({
-    @NamedQuery(name = "AllowedCallback.findByUrl", query = """
-        select a
-        from AllowedCallback a
-        where url = :url
-        """),
+        @NamedQuery(name = "AllowedCallback.findByUrl", query = """
+                select a
+                from AllowedCallback a
+                where url = :url
+                """),
 })
 public class AllowedCallback {
 

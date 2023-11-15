@@ -27,19 +27,19 @@ import org.hibernate.type.SqlTypes;
 @AllArgsConstructor
 @Entity(name = "Label")
 @Table(name = "label", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"owner", "text"}),
+        @UniqueConstraint(columnNames = {"owner", "text"}),
 })
 @NamedQueries({
-    @NamedQuery(name = "Label.find", query = """
-        select l
-        from Label l
-        where l.owner.id = :owner
-        """),
+        @NamedQuery(name = "Label.find", query = """
+                select l
+                from Label l
+                where l.owner.id = :owner
+                """),
 
-    @NamedQuery(name = "Label.clear", query = """
-        delete from Label l
-        where l.owner.id = :owner
-        """),
+        @NamedQuery(name = "Label.clear", query = """
+                delete from Label l
+                where l.owner.id = :owner
+                """),
 })
 public class Label {
 

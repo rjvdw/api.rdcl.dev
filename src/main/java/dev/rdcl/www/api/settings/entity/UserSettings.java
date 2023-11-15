@@ -29,11 +29,11 @@ import java.util.UUID;
 @Entity(name = "UserSettings")
 @Table(name = "user_settings")
 @NamedQueries({
-    @NamedQuery(name = "UserSettings.get", query = """
-        select us
-        from UserSettings us
-        where us.owner.id = :owner
-        """),
+        @NamedQuery(name = "UserSettings.get", query = """
+                select us
+                from UserSettings us
+                where us.owner.id = :owner
+                """),
 })
 public class UserSettings {
 

@@ -11,10 +11,10 @@ public class Mappers {
 
     public static UserIdentity identityToUserIdentity(Identity identity) {
         return UserIdentity.builder()
-            .name(identity.getEmail())
-            .displayName(identity.getName())
-            .id(uuidToByteArray(identity.getId()))
-            .build();
+                .name(identity.getEmail())
+                .displayName(identity.getName())
+                .id(uuidToByteArray(identity.getId()))
+                .build();
     }
 
     public static UUID byteArrayToUuid(ByteArray ba) {

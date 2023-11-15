@@ -21,16 +21,16 @@ public class LabelService {
 
     public List<Label> get(UUID ownerId) {
         return em
-            .createNamedQuery("Label.find", Label.class)
-            .setParameter("owner", ownerId)
-            .getResultList();
+                .createNamedQuery("Label.find", Label.class)
+                .setParameter("owner", ownerId)
+                .getResultList();
     }
 
     @Transactional
     public void update(UUID ownerId, List<Label> labels) {
         em.createNamedQuery("Label.clear")
-            .setParameter("owner", ownerId)
-            .executeUpdate();
+                .setParameter("owner", ownerId)
+                .executeUpdate();
 
         Identity owner = authService.getUser(ownerId);
 

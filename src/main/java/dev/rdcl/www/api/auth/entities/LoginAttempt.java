@@ -28,17 +28,17 @@ import java.util.UUID;
 @Entity(name = "LoginAttempt")
 @Table(name = "auth_login_attempt")
 @NamedQueries({
-    @NamedQuery(name = "LoginAttempt.findBySessionTokenAndVerificationCode", query = """
-        select l
-        from LoginAttempt l
-        where l.sessionToken = :sessionToken
-        and l.verificationCode = :verificationCode
-        and l.created > :createdAfter
-        """),
-    @NamedQuery(name = "LoginAttempt.deleteExpired", query = """
-        delete from LoginAttempt l
-        where l.created < :createdBefore
-        """),
+        @NamedQuery(name = "LoginAttempt.findBySessionTokenAndVerificationCode", query = """
+                select l
+                from LoginAttempt l
+                where l.sessionToken = :sessionToken
+                and l.verificationCode = :verificationCode
+                and l.created > :createdAfter
+                """),
+        @NamedQuery(name = "LoginAttempt.deleteExpired", query = """
+                delete from LoginAttempt l
+                where l.created < :createdBefore
+                """),
 })
 public class LoginAttempt {
 
