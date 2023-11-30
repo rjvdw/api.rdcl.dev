@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/openjdk-17:1.16-3
+FROM registry.access.redhat.com/ubi8/openjdk-21:1.18
 
 ARG USER=185
 
@@ -15,7 +15,7 @@ COPY --chown=${USER} target/quarkus-app/quarkus/ /deployments/quarkus/
 
 EXPOSE 8080
 USER ${USER}
-ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
 
 ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
