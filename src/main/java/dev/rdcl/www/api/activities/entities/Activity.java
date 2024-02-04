@@ -160,7 +160,7 @@ public class Activity {
     @CollectionTable(name = "activity_label", joinColumns = {
             @JoinColumn(name = "activity"),
     })
-    @Column(name = "text", nullable = false, updatable = false)
+    @Column(name = "text", nullable = false)
     private List<String> labels;
 
     private String asIsoDateTimeString(Instant instant) {
