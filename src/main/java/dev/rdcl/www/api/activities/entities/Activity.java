@@ -150,7 +150,6 @@ public class Activity {
 
     @FormParam("allDay")
     @DefaultValue("false")
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "all_day", nullable = false)
     @ColumnDefault("false")
     private boolean allDay;
