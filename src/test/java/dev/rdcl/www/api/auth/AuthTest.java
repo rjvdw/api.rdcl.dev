@@ -87,7 +87,7 @@ public class AuthTest {
 
         List<Mail> mails = verifyMails(1);
 
-        Mail mail = mails.get(0);
+        Mail mail = mails.getFirst();
         assertThat(mail.getHtml(), containsString("https://example.com/login/verify"));
     }
 
@@ -127,7 +127,7 @@ public class AuthTest {
 
         List<Mail> mails = verifyMails(1);
 
-        String verificationCode = extractVerificationCode(mails.get(0));
+        String verificationCode = extractVerificationCode(mails.getFirst());
 
         VerificationResponse verificationResponse = callVerify(loginResponse, verificationCode)
                 .then().statusCode(200)

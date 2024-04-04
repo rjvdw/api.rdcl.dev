@@ -35,7 +35,6 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.hibernate.validator.constraints.URL;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
@@ -116,7 +115,7 @@ public class AuthResource {
             LoginMode mode
     ) {
         try {
-            URI uri = callback == null ? null : new java.net.URL(callback).toURI();
+            URI uri = callback == null ? null : new URI(callback);
             InitiateLoginResult result = authService.initiateLogin(email, uri, mode);
 
             Response.ResponseBuilder response = Response.ok();
@@ -131,7 +130,7 @@ public class AuthResource {
             return response.entity(
                     new LoginResponse(result.mode(), result.payload())
             ).build();
-        } catch (MalformedURLException | URISyntaxException ex) {
+        } catch (URISyntaxException ex) {
             throw new InvalidCallback(callback, ex);
         }
     }

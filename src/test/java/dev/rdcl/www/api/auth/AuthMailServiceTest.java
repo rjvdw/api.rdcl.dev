@@ -42,7 +42,7 @@ public class AuthMailServiceTest {
         List<Mail> mails = mailbox.getMailsSentTo(Identities.VALID_IDENTITY.getEmail());
         assertThat(mails, hasSize(1));
 
-        Mail mail = mails.get(0);
+        Mail mail = mails.getFirst();
 
         assertThat(extractVerificationCode(mail), is("my-verification-code"));
     }
