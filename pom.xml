@@ -19,9 +19,10 @@
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.version>3.17.5</quarkus.platform.version>
         <skipITs>true</skipITs>
+        <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
         <surefire-plugin.version>3.2.3</surefire-plugin.version>
         <lombok.version>1.18.36</lombok.version>
-        <yubico-webauthn.version>2.5.0</yubico-webauthn.version>
+        <yubico-webauthn.version>2.5.4</yubico-webauthn.version>
     </properties>
 
     <dependencyManagement>
@@ -165,6 +166,15 @@
                             <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${versions-maven-plugin.version}</version>
+                <configuration>
+                    <ignoredVersions>(?i).*-(alpha|beta|m|rc)([-.]?\d+)?</ignoredVersions>
                 </configuration>
             </plugin>
 
